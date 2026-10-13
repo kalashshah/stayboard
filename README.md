@@ -65,7 +65,17 @@ For a real Fire TV Stick running Vega OS: enable developer mode, `vega device in
 4. Back in the editor, open **Inbox**: the hair-dryer question is waiting. Click **Add as FAQ**, type the answer. Ask again on the phone.
 5. To see the real TV app, run it on the Vega Virtual Device (above) and pair it from **Devices** with the six-letter code the TV shows.
 
-Screenshots from the Vega Virtual Device and the dashboard are in the demo video and the Devpost gallery.
+## Screenshots (Vega Virtual Device and dashboard)
+
+| | |
+|---|---|
+| ![Pair](docs/media/tv-pair.png) | ![Home](docs/media/tv-home.png) |
+| ![Wi-Fi](docs/media/tv-wifi.png) | ![Checkout](docs/media/tv-checkout.png) |
+| ![Guide](docs/media/tv-guide.png) | ![Local picks](docs/media/tv-places.png) |
+| ![Ask](docs/media/tv-ask.png) | ![Answer](docs/media/tv-ask-answer.png) |
+| ![Keyboard](docs/media/tv-keyboard.png) | ![Unanswered](docs/media/tv-ask-unanswered.png) |
+| ![Landing](docs/media/web-landing.png) | ![Editor](docs/media/web-editor.png) |
+| ![Inbox](docs/media/web-inbox.png) | ![Guest page](docs/media/phone-guest.png) |
 
 ## Security and privacy
 
