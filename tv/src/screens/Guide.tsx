@@ -12,8 +12,8 @@ export function Guide({ c, theme, onBack }: { c: PropertyConfig; theme: Theme; o
     <View style={styles.wrap}>
       <Header theme={theme} title="House guide" sub="How things work around here" onBack={onBack} />
       <View style={styles.body}>
-        <TVFocusGuideView autoFocus style={styles.list}>
-          <ScrollView>
+        <ScrollView style={styles.list}>
+          <TVFocusGuideView autoFocus>
             {topics.map((x, idx) => (
               <Focusable
                 key={idx}
@@ -24,8 +24,8 @@ export function Guide({ c, theme, onBack }: { c: PropertyConfig; theme: Theme; o
               </Focusable>
             ))}
             {topics.length === 0 && <Text style={{ color: theme.sub, fontSize: 14 }}>The host hasn't added guide topics yet.</Text>}
-          </ScrollView>
-        </TVFocusGuideView>
+          </TVFocusGuideView>
+        </ScrollView>
         {t && (
           <Card theme={theme} style={styles.detail}>
             <Mono theme={theme}>{i < c.guide.length ? 'Topic' : 'FAQ'}</Mono>

@@ -31,3 +31,7 @@ id = "com.kalashshah.stayboard.main"
 runtime-module = "/com.amazon.kepler.runtime.react_native_kepler_4@IReactNativeKepler_0"
 launch-type = "singleton"
 categories = ["com.amazon.category.main"]
+
+[wants]
+[[wants.service]]
+id = "com.amazon.inputmethod.service"
