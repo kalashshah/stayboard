@@ -71,19 +71,19 @@ export function Card({ theme, style, children }: { theme: Theme; style?: StylePr
 }
 
 export const Mono = ({ children, theme, size = 22 }: { children: React.ReactNode; theme: Theme; size?: number }) => (
-  <Text style={{ color: theme.sub, fontSize: size, letterSpacing: 2, textTransform: 'uppercase', fontWeight: '600' }}>{children}</Text>
+  <Text style={{ color: theme.sub, fontSize: size, letterSpacing: 1, textTransform: 'uppercase', fontWeight: '600' }}>{children}</Text>
 )
 
-export const PAD = 72
+export const PAD = 36
 
 const styles = StyleSheet.create({
   screen: { flex: 1, width: '100%', height: '100%' },
-  glow: { position: 'absolute', right: -300, top: -420, width: 1100, height: 1100, borderRadius: 550 },
+  glow: { position: 'absolute', right: -150, top: -210, width: 550, height: 550, borderRadius: 550 },
   ring: { borderColor: '#ffffff' },
-  back: { alignSelf: 'flex-start', borderWidth: 3, borderRadius: 999, paddingHorizontal: 26, paddingVertical: 12, marginRight: 28 },
-  backText: { fontSize: 26, fontWeight: '600' },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 36 },
-  title: { fontSize: 60, fontWeight: '600', letterSpacing: -1 },
-  sub: { fontSize: 26, marginTop: 4 },
-  card: { borderRadius: 28, borderWidth: 1, padding: 32 },
+  back: { alignSelf: 'flex-start', borderWidth: 2, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 6, marginRight: 14 },
+  backText: { fontSize: 13, fontWeight: '600' },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
+  title: { fontSize: 30, fontWeight: '600', letterSpacing: -0.5 },
+  sub: { fontSize: 13, marginTop: 2 },
+  card: { borderRadius: 14, borderWidth: 1, padding: 16 },
 })

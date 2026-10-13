@@ -65,16 +65,16 @@ export function Home({ c, theme, onOpen, notice }: { c: PropertyConfig; theme: T
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 56, justifyContent: 'space-between' },
+  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 28, justifyContent: 'space-between' },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  name: { fontSize: 30, fontWeight: '600', letterSpacing: -0.5 },
-  time: { fontSize: 28 },
-  hero: { gap: 14, maxWidth: 1400 },
-  h: { fontSize: 92, fontWeight: '600', letterSpacing: -3, lineHeight: 100 },
-  p: { fontSize: 32, lineHeight: 44, maxWidth: 1200 },
-  row: { flexDirection: 'row', gap: 20 },
-  tile: { flex: 1, minHeight: 210, borderRadius: 26, borderWidth: 4, padding: 26, justifyContent: 'flex-end', gap: 6 },
-  tileT: { fontSize: 30, fontWeight: '600', letterSpacing: -0.5 },
-  tileS: { fontSize: 22 },
-  foot: { fontSize: 24 },
+  name: { fontSize: 15, fontWeight: '600', letterSpacing: -0.25 },
+  time: { fontSize: 14 },
+  hero: { gap: 7, maxWidth: 700 },
+  h: { fontSize: 46, fontWeight: '600', letterSpacing: -1.5, lineHeight: 50 },
+  p: { fontSize: 16, lineHeight: 22, maxWidth: 600 },
+  row: { flexDirection: 'row', gap: 10 },
+  tile: { flex: 1, minHeight: 105, borderRadius: 13, borderWidth: 2, padding: 13, justifyContent: 'flex-end', gap: 3 },
+  tileT: { fontSize: 15, fontWeight: '600', letterSpacing: -0.25 },
+  tileS: { fontSize: 11 },
+  foot: { fontSize: 12 },
 })

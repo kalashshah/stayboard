@@ -12,7 +12,7 @@ export function Wifi({ c, theme, onBack }: { c: PropertyConfig; theme: Theme; on
         <View style={styles.left}>
           <Mono theme={theme}>Network</Mono>
           <Text style={[styles.big, { color: theme.ink }]}>{c.wifi.ssid || 'Ask your host'}</Text>
-          <View style={{ height: 36 }} />
+          <View style={{ height: 18 }} />
           <Mono theme={theme}>Password</Mono>
           <Text style={[styles.big, styles.pw, { color: theme.ink }]}>{c.wifi.password || '—'}</Text>
           <Text style={[styles.hint, { color: theme.sub }]}>Point your phone's camera at the code to join without typing.</Text>
@@ -20,7 +20,7 @@ export function Wifi({ c, theme, onBack }: { c: PropertyConfig; theme: Theme; on
         {c.wifi.ssid ? (
           <Card theme={theme} style={styles.qrCard}>
             <View style={styles.qrInner}>
-              <QRCode value={wifiQr(c)} size={380} backgroundColor="#ffffff" color="#1c1c1c" />
+              <QRCode value={wifiQr(c)} size={190} backgroundColor="#ffffff" color="#1c1c1c" />
             </View>
           </Card>
         ) : null}
@@ -30,12 +30,12 @@ export function Wifi({ c, theme, onBack }: { c: PropertyConfig; theme: Theme; on
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 56 },
-  body: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 80 },
-  left: { flex: 1, gap: 8 },
-  big: { fontSize: 76, fontWeight: '600', letterSpacing: -2 },
-  pw: { letterSpacing: 2, fontFamily: 'monospace' },
-  hint: { fontSize: 26, marginTop: 40, maxWidth: 700, lineHeight: 36 },
-  qrCard: { padding: 24 },
-  qrInner: { backgroundColor: '#fff', padding: 22, borderRadius: 18 },
+  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 28 },
+  body: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 40 },
+  left: { flex: 1, gap: 4 },
+  big: { fontSize: 38, fontWeight: '600', letterSpacing: -1 },
+  pw: { letterSpacing: 1, fontFamily: 'monospace' },
+  hint: { fontSize: 13, marginTop: 20, maxWidth: 350, lineHeight: 18 },
+  qrCard: { padding: 12 },
+  qrInner: { backgroundColor: '#fff', padding: 11, borderRadius: 9 },
 })

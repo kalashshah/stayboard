@@ -22,7 +22,7 @@ export function Pair({ code, pairUrl, notice }: { code: string; pairUrl: string;
         </View>
         <View style={styles.right}>
           <View style={styles.qrCard}>
-            <QRCode value={pairUrl} size={300} backgroundColor="#ffffff" color="#1c1c1c" />
+            <QRCode value={pairUrl} size={150} backgroundColor="#ffffff" color="#1c1c1c" />
           </View>
           <Mono theme={theme}>Scan to open the pairing page</Mono>
         </View>
@@ -32,14 +32,14 @@ export function Pair({ code, pairUrl, notice }: { code: string; pairUrl: string;
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 120, gap: 80 },
-  left: { flex: 1.4, gap: 22 },
-  right: { flex: 1, alignItems: 'center', gap: 20 },
-  brand: { fontSize: 30, fontWeight: '600', letterSpacing: 4, textTransform: 'uppercase', opacity: 0.8 },
-  h: { fontSize: 64, fontWeight: '600', letterSpacing: -1.5, lineHeight: 72 },
-  p: { fontSize: 30, lineHeight: 42, maxWidth: 820 },
-  codeBox: { alignSelf: 'flex-start', borderWidth: 4, borderRadius: 28, paddingHorizontal: 44, paddingVertical: 20, marginTop: 10 },
-  code: { fontSize: 112, fontWeight: '700', letterSpacing: 6 },
-  wait: { fontSize: 26 },
-  qrCard: { backgroundColor: '#fff', padding: 28, borderRadius: 28 },
+  wrap: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 60, gap: 40 },
+  left: { flex: 1.4, gap: 11 },
+  right: { flex: 1, alignItems: 'center', gap: 10 },
+  brand: { fontSize: 15, fontWeight: '600', letterSpacing: 2, textTransform: 'uppercase', opacity: 0.8 },
+  h: { fontSize: 32, fontWeight: '600', letterSpacing: -0.75, lineHeight: 36 },
+  p: { fontSize: 15, lineHeight: 21, maxWidth: 410 },
+  codeBox: { alignSelf: 'flex-start', borderWidth: 2, borderRadius: 14, paddingHorizontal: 22, paddingVertical: 10, marginTop: 5 },
+  code: { fontSize: 56, fontWeight: '700', letterSpacing: 3 },
+  wait: { fontSize: 13 },
+  qrCard: { backgroundColor: '#fff', padding: 14, borderRadius: 14 },
 })

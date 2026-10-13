@@ -124,7 +124,7 @@ export const App = () => {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 },
-  brand: { fontSize: 72, fontWeight: '600', letterSpacing: -2 },
-  status: { fontSize: 28 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
+  brand: { fontSize: 36, fontWeight: '600', letterSpacing: -1 },
+  status: { fontSize: 14 },
 })

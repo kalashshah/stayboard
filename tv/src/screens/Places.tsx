@@ -15,16 +15,16 @@ export function Places({ c, theme, onBack }: { c: PropertyConfig; theme: Theme; 
             <Text style={[styles.note, { color: theme.sub }]}>{p.note}</Text>
           </Card>
         ))}
-        {c.places.length === 0 && <Text style={{ color: theme.sub, fontSize: 28 }}>No local picks yet.</Text>}
+        {c.places.length === 0 && <Text style={{ color: theme.sub, fontSize: 14 }}>No local picks yet.</Text>}
       </ScrollView>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 56 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 24 },
-  card: { width: 570, gap: 8, minHeight: 230 },
-  name: { fontSize: 40, fontWeight: '600', letterSpacing: -1 },
-  note: { fontSize: 26, lineHeight: 36 },
+  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 28 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  card: { width: 285, gap: 4, minHeight: 115 },
+  name: { fontSize: 20, fontWeight: '600', letterSpacing: -0.5 },
+  note: { fontSize: 13, lineHeight: 18 },
 })

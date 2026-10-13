@@ -23,7 +23,7 @@ export function Guide({ c, theme, onBack }: { c: PropertyConfig; theme: Theme; o
                 {(f) => <Text style={[styles.itemT, { color: f ? '#fff' : theme.ink }]} numberOfLines={2}>{x.title}</Text>}
               </Focusable>
             ))}
-            {topics.length === 0 && <Text style={{ color: theme.sub, fontSize: 28 }}>The host hasn't added guide topics yet.</Text>}
+            {topics.length === 0 && <Text style={{ color: theme.sub, fontSize: 14 }}>The host hasn't added guide topics yet.</Text>}
           </ScrollView>
         </TVFocusGuideView>
         {t && (
@@ -41,12 +41,12 @@ export function Guide({ c, theme, onBack }: { c: PropertyConfig; theme: Theme; o
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 56 },
-  body: { flex: 1, flexDirection: 'row', gap: 40 },
-  list: { width: 620 },
-  item: { borderWidth: 3, borderRadius: 18, paddingHorizontal: 22, paddingVertical: 18, marginBottom: 8 },
-  itemT: { fontSize: 30, fontWeight: '500' },
-  detail: { flex: 1, gap: 14 },
-  h: { fontSize: 48, fontWeight: '600', letterSpacing: -1 },
-  p: { fontSize: 30, lineHeight: 44 },
+  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 28 },
+  body: { flex: 1, flexDirection: 'row', gap: 20 },
+  list: { width: 310 },
+  item: { borderWidth: 2, borderRadius: 9, paddingHorizontal: 11, paddingVertical: 9, marginBottom: 4 },
+  itemT: { fontSize: 15, fontWeight: '500' },
+  detail: { flex: 1, gap: 7 },
+  h: { fontSize: 24, fontWeight: '600', letterSpacing: -0.5 },
+  p: { fontSize: 15, lineHeight: 22 },
 })

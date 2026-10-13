@@ -55,11 +55,11 @@ export const Tile = ({
 
 const styles = StyleSheet.create({
   tile: {
-    width: 160,
-    height: 160,
-    borderRadius: 20,
+    width: 80,
+    height: 80,
+    borderRadius: 10,
     overflow: 'hidden',
-    padding: 12,
+    padding: 6,
   },
   topHalf: {
     flex: 1,
@@ -80,16 +80,16 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   icon: {
-    width: 40,
-    height: 40,
+    width: 20,
+    height: 20,
     tintColor: '#FFFFFF',
   },
   label: {
     color: '#FFFFFF',
-    fontSize: 22,
+    fontSize: 11,
     fontWeight: 'bold',
     textAlign: 'center',
-    lineHeight: 26,
+    lineHeight: 13,
     includeFontPadding: false,
   },
 });

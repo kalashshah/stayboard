@@ -73,7 +73,7 @@ export function Ask({ c, theme, onBack, secret, guestUrl }: { c: PropertyConfig;
         </View>
         <View style={styles.right}>
           <View style={styles.qrCard}>
-            <QRCode value={guestUrl} size={260} backgroundColor="#ffffff" color="#1c1c1c" />
+            <QRCode value={guestUrl} size={130} backgroundColor="#ffffff" color="#1c1c1c" />
           </View>
           <Text style={[styles.qrT, { color: theme.ink }]}>Prefer your phone?</Text>
           <Text style={[styles.qrS, { color: theme.sub }]}>Scan to read the guide and ask from there.</Text>
@@ -84,19 +84,19 @@ export function Ask({ c, theme, onBack, secret, guestUrl }: { c: PropertyConfig;
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 56 },
-  body: { flex: 1, flexDirection: 'row', gap: 60 },
-  left: { flex: 1, gap: 20 },
-  right: { width: 380, alignItems: 'center', gap: 10, paddingTop: 10 },
-  input: { fontSize: 32, borderWidth: 3, borderRadius: 22, paddingHorizontal: 28, paddingVertical: 22 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  chip: { borderWidth: 3, borderRadius: 999, paddingHorizontal: 22, paddingVertical: 12 },
-  chipT: { fontSize: 24, fontWeight: '500' },
-  answer: { flex: 1, gap: 10 },
-  qText: { fontSize: 26 },
-  a: { fontSize: 34, lineHeight: 48 },
-  note: { fontSize: 22 },
-  qrCard: { backgroundColor: '#fff', padding: 20, borderRadius: 24 },
-  qrT: { fontSize: 28, fontWeight: '600', marginTop: 10 },
-  qrS: { fontSize: 22, textAlign: 'center' },
+  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 28 },
+  body: { flex: 1, flexDirection: 'row', gap: 30 },
+  left: { flex: 1, gap: 10 },
+  right: { width: 190, alignItems: 'center', gap: 5, paddingTop: 5 },
+  input: { fontSize: 16, borderWidth: 2, borderRadius: 11, paddingHorizontal: 14, paddingVertical: 11 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  chip: { borderWidth: 2, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 6 },
+  chipT: { fontSize: 12, fontWeight: '500' },
+  answer: { flex: 1, gap: 5 },
+  qText: { fontSize: 13 },
+  a: { fontSize: 17, lineHeight: 24 },
+  note: { fontSize: 11 },
+  qrCard: { backgroundColor: '#fff', padding: 10, borderRadius: 12 },
+  qrT: { fontSize: 14, fontWeight: '600', marginTop: 5 },
+  qrS: { fontSize: 11, textAlign: 'center' },
 })

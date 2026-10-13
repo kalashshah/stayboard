@@ -20,8 +20,8 @@ export function Contacts({ c, theme, onBack }: { c: PropertyConfig; theme: Theme
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 56 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 24 },
-  card: { width: 860, gap: 10 },
-  v: { fontSize: 48, fontWeight: '600', letterSpacing: -1 },
+  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 28 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  card: { width: 430, gap: 5 },
+  v: { fontSize: 24, fontWeight: '600', letterSpacing: -0.5 },
 })

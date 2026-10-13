@@ -26,10 +26,10 @@ export function Rules({ c, theme, onBack }: { c: PropertyConfig; theme: Theme; o
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 56 },
-  cols: { flexDirection: 'row', gap: 60 },
+  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 28 },
+  cols: { flexDirection: 'row', gap: 30 },
   col: { flex: 1 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 22, paddingVertical: 22, borderBottomWidth: 1 },
-  dot: { width: 16, height: 16, borderRadius: 8 },
-  rule: { fontSize: 36, lineHeight: 46, flex: 1 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 11, borderBottomWidth: 1 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  rule: { fontSize: 18, lineHeight: 23, flex: 1 },
 })
