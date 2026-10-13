@@ -1,0 +1,12 @@
+node_modules/
+.wrangler/
+dist/
+.dev.vars
+.superpowers/
+.env*
+!.dev.vars.example
+tv/node_modules/
+tv/build/
+tv/dist/
+tv/buildinfo.json
+.DS_Store

@@ -1,0 +1,61 @@
+import type { PropertyConfig, TileKey } from '../worker/config'
+
+export type { PropertyConfig, TileKey }
+export type Host = { id: string; email: string }
+export type PropertySummary = { id: string; slug: string; name: string; updated_at: number; devices: number; unanswered: number }
+export type Property = { id: string; slug: string; config: PropertyConfig; updated_at: number }
+export type Device = { code: string; label: string | null; paired_at: number | null; last_seen_at: number | null }
+export type Question = { id: string; property_id: string; source: 'tv' | 'phone'; question: string; answer: string; answered: number; created_at: number }
+export type Answer = { answered: boolean; answer: string }
+
+export class ApiError extends Error {
+  constructor(public status: number, message: string) {
+    super(message)
+  }
+}
+
+async function call<T>(path: string, init?: RequestInit & { json?: unknown }): Promise<T> {
+  const { json, ...rest } = init ?? {}
+  const res = await fetch(`/api${path}`, {
+    ...rest,
+    method: rest.method ?? (json !== undefined ? 'POST' : 'GET'),
+    headers: json !== undefined ? { 'content-type': 'application/json' } : rest.headers,
+    body: json !== undefined ? JSON.stringify(json) : rest.body,
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new ApiError(res.status, (data as { error?: string }).error ?? `Request failed (${res.status})`)
+  return data as T
+}
+
+export const api = {
+  me: () => call<{ host: Host }>('/auth/me'),
+  signup: (email: string, password: string) => call<{ host: Host }>('/auth/signup', { json: { email, password } }),
+  login: (email: string, password: string) => call<{ host: Host }>('/auth/login', { json: { email, password } }),
+  logout: () => call('/auth/logout', { method: 'POST' }),
+  properties: () => call<{ properties: PropertySummary[] }>('/properties'),
+  createProperty: (name: string) => call<{ property: Property }>('/properties', { json: { name } }),
+  property: (id: string) => call<{ property: Property; devices: Device[]; guestUrl: string }>(`/properties/${id}`),
+  saveConfig: (id: string, config: PropertyConfig) => call<{ updated_at: number }>(`/properties/${id}`, { method: 'PUT', json: { config } }),
+  deleteProperty: (id: string) => call(`/properties/${id}`, { method: 'DELETE' }),
+  pair: (id: string, code: string, label: string) => call<{ devices: Device[] }>(`/properties/${id}/pair`, { json: { code, label } }),
+  unpair: (id: string, code: string) => call<{ devices: Device[] }>(`/properties/${id}/devices/${code}`, { method: 'DELETE' }),
+  questions: (id: string) => call<{ questions: Question[] }>(`/properties/${id}/questions`),
+  deleteQuestion: (id: string, qid: string) => call(`/properties/${id}/questions/${qid}`, { method: 'DELETE' }),
+  guest: (slug: string) => call<{ config: PropertyConfig; updatedAt: number }>(`/g/${slug}`),
+  guestAsk: (slug: string, question: string) => call<Answer>(`/g/${slug}/ask`, { json: { question } }),
+}
+
+export const headlineFor = (c: PropertyConfig) =>
+  c.welcome.headline.replace('{guest}', c.welcome.guestName ? `, ${c.welcome.guestName}` : '')
+
+export const wifiQr = (c: PropertyConfig) =>
+  `WIFI:T:WPA;S:${c.wifi.ssid.replace(/([\\;,:"])/g, '\\$1')};P:${c.wifi.password.replace(/([\\;,:"])/g, '\\$1')};;`
+
+export function ago(ms: number | null) {
+  if (!ms) return 'never'
+  const s = Math.max(0, Math.round((Date.now() - ms) / 1000))
+  if (s < 90) return 'just now'
+  if (s < 3600) return `${Math.round(s / 60)} min ago`
+  if (s < 86400) return `${Math.round(s / 3600)} h ago`
+  return `${Math.round(s / 86400)} d ago`
+}
