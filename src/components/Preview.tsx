@@ -5,7 +5,7 @@ export const TILE_LABELS: Record<TileKey, { title: string; sub: (c: PropertyConf
   wifi: { title: 'Wi-Fi', sub: (c) => c.wifi.ssid || 'Not set yet', glyph: '◠' },
   checkout: { title: 'Checkout', sub: (c) => c.stay.checkOut, glyph: '◷' },
   rules: { title: 'House rules', sub: (c) => `${c.rules.length} rules`, glyph: '☰' },
-  guide: { title: 'House guide', sub: (c) => `${c.guide.length} topics`, glyph: '▤' },
+  guide: { title: 'House guide', sub: (c) => `${c.guide.length + c.faqs.length} topics`, glyph: '▤' },
   places: { title: 'Local picks', sub: (c) => `${c.places.length} nearby`, glyph: '◎' },
   contacts: { title: 'Contacts', sub: (c) => c.contacts[0]?.label ?? '', glyph: '✆' },
   ask: { title: 'Ask the house', sub: () => 'Any question, any time', glyph: '?' },

@@ -9,8 +9,8 @@ export const TILE_KEYS = ['wifi', 'checkout', 'rules', 'guide', 'places', 'conta
 export type TileKey = (typeof TILE_KEYS)[number]
 
 export const configSchema = z.object({
-  name: str(80),
-  hostName: str(60),
+  name: str(80).min(1, 'give the property a name'),
+  hostName: str(60).min(1, 'add a host name'),
   welcome: z.object({ headline: str(80), message: str(400), guestName: str(60) }),
   stay: z.object({ checkIn: str(20), checkOut: str(20), checkoutSteps: list(str(160)) }),
   wifi: z.object({ ssid: str(64), password: str(64) }),
@@ -42,12 +42,33 @@ export function parseConfig(input: unknown): { ok: true; config: PropertyConfig 
   return { ok: false, error: `${issue.path.join('.') || 'config'}: ${issue.message}` }
 }
 
+/** "Welcome, {guest}" → "Welcome, Sam", or "Welcome" when no guest name is set. */
+export function headlineFor(c: PropertyConfig) {
+  const h = c.welcome.headline
+  const name = c.welcome.guestName.trim()
+  if (!h.includes('{guest}')) return h
+  if (name) return h.replace(/\{guest\}/g, name)
+  const out = h
+    .replace(/\s*[,;:–—-]?\s*\{guest\}\s*[,;:–—-]?\s*/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([!?.])/g, '$1')
+    .trim()
+  return out ? out[0].toUpperCase() + out.slice(1) : out
+}
+
+/** Wi-Fi QR payload phones understand; open networks use nopass. */
+export function wifiQr(c: PropertyConfig) {
+  const esc = (s: string) => s.replace(/([\\;,:"])/g, '\\$1')
+  if (!c.wifi.password) return `WIFI:T:nopass;S:${esc(c.wifi.ssid)};;`
+  return `WIFI:T:WPA;S:${esc(c.wifi.ssid)};P:${esc(c.wifi.password)};;`
+}
+
 export function defaultConfig(name: string): PropertyConfig {
   return {
     name,
     hostName: 'Your host',
     welcome: {
-      headline: 'Welcome{guest}',
+      headline: 'Welcome, {guest}',
       message: 'Make yourself at home. Everything you need for your stay is on this screen.',
       guestName: '',
     },

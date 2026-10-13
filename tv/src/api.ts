@@ -44,5 +44,6 @@ export async function loadCachedState(): Promise<TvState | null> {
   }
 }
 export const saveCachedState = (s: TvState) => AsyncStorage.setItem(KEY_STATE, JSON.stringify(s)).catch(() => {})
+export const clearCachedState = () => AsyncStorage.removeItem(KEY_STATE).catch(() => {})
 
 export const isConfig = (s: TvState | null): s is Extract<TvState, { paired: true }> & { config: PropertyConfig } => !!s && s.paired

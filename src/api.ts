@@ -1,4 +1,5 @@
 import type { PropertyConfig, TileKey } from '../worker/config'
+export { headlineFor, wifiQr } from '../worker/config'
 
 export type { PropertyConfig, TileKey }
 export type Host = { id: string; email: string }
@@ -44,12 +45,6 @@ export const api = {
   guest: (slug: string) => call<{ config: PropertyConfig; updatedAt: number }>(`/g/${slug}`),
   guestAsk: (slug: string, question: string) => call<Answer>(`/g/${slug}/ask`, { json: { question } }),
 }
-
-export const headlineFor = (c: PropertyConfig) =>
-  c.welcome.headline.replace('{guest}', c.welcome.guestName ? `, ${c.welcome.guestName}` : '')
-
-export const wifiQr = (c: PropertyConfig) =>
-  `WIFI:T:WPA;S:${c.wifi.ssid.replace(/([\\;,:"])/g, '\\$1')};P:${c.wifi.password.replace(/([\\;,:"])/g, '\\$1')};;`
 
 export function ago(ms: number | null) {
   if (!ms) return 'never'

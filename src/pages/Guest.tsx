@@ -59,7 +59,7 @@ export function Guest({ slug }: { slug: string }) {
         </section>
       )}
 
-      {t.guide && c.guide.length > 0 && (
+      {t.guide && (c.guide.length > 0 || c.faqs.length > 0) && (
         <section className="card g-sec">
           <h2>House guide</h2>
           {c.guide.map((g, i) => (

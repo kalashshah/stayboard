@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { navigate } from '../App'
 import { ago, api, ApiError, wifiQr, type Device, type Property, type PropertyConfig, type Question, type TileKey } from '../api'
 import { Area, Field, ObjectList, StringList, Text, Toggle } from '../components/Fields'
@@ -20,16 +20,18 @@ export function Editor({ id, tab }: { id: string; tab: string }) {
   const [questions, setQuestions] = useState<Question[] | null>(null)
   const [status, setStatus] = useState<'saved' | 'saving' | 'dirty' | string>('saved')
   const [missing, setMissing] = useState(false)
-  const loaded = useRef(false)
+  const latest = useRef<PropertyConfig | null>(null) // newest config, for saves that outlive a render
+  const dirty = useRef(false)
+  const chain = useRef<Promise<boolean>>(Promise.resolve(true)) // saves run one after another, in order
   const timer = useRef<number>(0)
 
   useEffect(() => {
     api.property(id).then((r) => {
       setProp(r.property)
       setConfig(r.property.config)
+      latest.current = r.property.config
       setDevices(r.devices)
       setGuestUrl(r.guestUrl)
-      loaded.current = true
     }).catch(() => setMissing(true))
   }, [id])
 
@@ -38,25 +40,44 @@ export function Editor({ id, tab }: { id: string; tab: string }) {
     if (tab === 'inbox' || questions === null) loadQuestions()
   }, [tab, id])
 
-  // autosave, 600 ms after the last change
-  const update = (patch: (c: PropertyConfig) => PropertyConfig) => {
-    setConfig((c) => (c ? patch(c) : c))
-    setStatus('dirty')
-  }
-  useEffect(() => {
-    if (!config || !loaded.current || status !== 'dirty') return
-    clearTimeout(timer.current)
-    timer.current = window.setTimeout(async () => {
-      setStatus('saving')
+  /** Save the newest config (or the one given). Resolves true when that save landed. */
+  const save = useCallback((cfg?: PropertyConfig) => {
+    const toSave = cfg ?? latest.current
+    if (!toSave) return Promise.resolve(false)
+    dirty.current = false
+    setStatus('saving')
+    const p = chain.current.then(async () => {
       try {
-        await api.saveConfig(id, config)
-        setStatus((s) => (s === 'saving' ? 'saved' : s))
+        await api.saveConfig(id, toSave)
+        setStatus(dirty.current ? 'dirty' : 'saved')
+        return true
       } catch (e) {
+        dirty.current = true
         setStatus(e instanceof ApiError ? e.message : 'Could not save')
+        return false
       }
-    }, 600)
-    return () => clearTimeout(timer.current)
-  }, [config, status])
+    })
+    chain.current = p
+    return p
+  }, [id])
+
+  // autosave 600 ms after the last change; a pending save is flushed, not dropped, when leaving the page
+  const update = (patch: (c: PropertyConfig) => PropertyConfig) => {
+    if (!latest.current) return
+    const next = patch(latest.current)
+    latest.current = next
+    setConfig(next)
+    dirty.current = true
+    setStatus('dirty')
+    clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => save(), 600)
+  }
+  const mounted = useRef(true)
+  useEffect(() => () => {
+    mounted.current = false
+    clearTimeout(timer.current)
+    if (dirty.current) save()
+  }, [save])
 
   const go = (t: string) => navigate(`/app/p/${id}?tab=${t}`)
 
@@ -66,9 +87,21 @@ export function Editor({ id, tab }: { id: string; tab: string }) {
   const set = <K extends keyof PropertyConfig>(k: K, v: PropertyConfig[K]) => update((x) => ({ ...x, [k]: v }))
   const unanswered = questions?.filter((q) => !q.answered).length ?? 0
 
-  const addFaq = (q: Question) => {
-    update((x) => ({ ...x, faqs: [...x.faqs, { q: q.question, a: '' }] }))
-    api.deleteQuestion(id, q.id).then(loadQuestions)
+  const addFaq = async (q: Question) => {
+    const cur = latest.current
+    if (!cur) return
+    if (cur.faqs.length >= 40) {
+      setStatus('The FAQ list is full (40). Remove one first.')
+      return
+    }
+    const next = { ...cur, faqs: [...cur.faqs, { q: q.question, a: '' }] }
+    latest.current = next
+    setConfig(next)
+    clearTimeout(timer.current)
+    if (!(await save(next))) return // keep the question in the inbox if the save failed
+    await api.deleteQuestion(id, q.id)
+    if (!mounted.current) return // the host already left this page; don't drag them back
+    loadQuestions()
     go('faqs')
   }
 

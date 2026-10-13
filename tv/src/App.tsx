@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { BackHandler, StyleSheet, Text, View } from 'react-native'
-import { getState, HttpError, loadCachedState, loadSecret, register, saveCachedState, saveSecret } from './api'
+import { clearCachedState, getState, HttpError, loadCachedState, loadSecret, register, saveCachedState, saveSecret } from './api'
 import { Ask } from './screens/Ask'
 import { Checkout } from './screens/Checkout'
 import { Contacts } from './screens/Contacts'
@@ -17,6 +17,7 @@ const PAIR_POLL_MS = 5_000
 const CONFIG_POLL_MS = 60_000
 
 export const App = () => {
+  const [booted, setBooted] = useState(false)
   const [secret, setSecret] = useState<string | null>(null)
   const [state, setState] = useState<TvState | null>(null)
   const [notice, setNotice] = useState('')
@@ -24,48 +25,52 @@ export const App = () => {
   const stackRef = useRef(stack)
   stackRef.current = stack
 
-  // Boot: show the last saved screen immediately, then find or create this TV's identity.
+  // Boot: show the last saved screen immediately and load this TV's identity, if it has one.
   useEffect(() => {
     ;(async () => {
       const cached = await loadCachedState()
-      if (cached) setState(cached)
-      let s = await loadSecret()
-      if (!s) {
-        try {
-          const r = await register()
-          s = r.secret
-          await saveSecret(s)
-        } catch {
-          setNotice('Cannot reach Stayboard. Check the TV is online.')
-          return
-        }
-      }
-      setSecret(s)
+      if (cached && cached.paired) setState(cached)
+      const s = await loadSecret()
+      if (s) setSecret(s)
+      setBooted(true)
     })()
   }, [])
 
-  // Poll: fast while waiting to be paired, once a minute after.
+  // Poll: register until we have an identity, poll fast while unpaired, once a minute after.
   const paired = state?.paired === true
   useEffect(() => {
-    if (!secret) return
+    if (!booted) return
     let alive = true
     const tick = async () => {
+      if (!secret) {
+        try {
+          const r = await register()
+          if (!alive) return
+          await saveSecret(r.secret)
+          setSecret(r.secret)
+          setNotice('')
+        } catch {
+          if (alive) setNotice('Cannot reach Stayboard. Check the TV is online.')
+        }
+        return
+      }
       try {
         const s = await getState(secret)
         if (!alive) return
         setState(s)
         setNotice('')
         if (s.paired) saveCachedState(s)
-        else setStack([])
+        else {
+          setStack([])
+          clearCachedState()
+        }
       } catch (e) {
         if (!alive) return
         if (e instanceof HttpError && e.status === 401) {
-          const r = await register().catch(() => null)
-          if (r) {
-            await saveSecret(r.secret)
-            setSecret(r.secret)
-          }
-        } else setNotice('Offline. Showing the last saved screen.')
+          // The server forgot this TV: start over with a fresh identity.
+          await clearCachedState()
+          setSecret(null)
+        } else setNotice(state?.paired ? 'Offline. Showing the last saved screen.' : 'Cannot reach Stayboard. Check the TV is online.')
       }
     }
     tick()
@@ -74,7 +79,7 @@ export const App = () => {
       alive = false
       clearInterval(id)
     }
-  }, [secret, paired])
+  }, [booted, secret, paired])
 
   // Remote Back key pops the screen stack; on Home it falls through to the system.
   useEffect(() => {

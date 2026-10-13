@@ -24,11 +24,26 @@ export type Answer = { answered: boolean; answer: string }
 
 export const TILE_ORDER: TileKey[] = ['wifi', 'checkout', 'rules', 'guide', 'places', 'contacts', 'ask']
 
-export const headlineFor = (c: PropertyConfig) =>
-  c.welcome.headline.replace('{guest}', c.welcome.guestName ? `, ${c.welcome.guestName}` : '')
+/** "Welcome, {guest}" → "Welcome, Sam", or "Welcome" when no guest name is set. Mirrors worker/config.ts. */
+export function headlineFor(c: PropertyConfig) {
+  const h = c.welcome.headline
+  const name = c.welcome.guestName.trim()
+  if (!h.includes('{guest}')) return h
+  if (name) return h.replace(/\{guest\}/g, name)
+  const out = h
+    .replace(/\s*[,;:–—-]?\s*\{guest\}\s*[,;:–—-]?\s*/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([!?.])/g, '$1')
+    .trim()
+  return out ? out[0].toUpperCase() + out.slice(1) : out
+}
 
-export const wifiQr = (c: PropertyConfig) =>
-  `WIFI:T:WPA;S:${c.wifi.ssid.replace(/([\\;,:"])/g, '\\$1')};P:${c.wifi.password.replace(/([\\;,:"])/g, '\\$1')};;`
+/** Wi-Fi QR payload phones understand; open networks use nopass. */
+export function wifiQr(c: PropertyConfig) {
+  const esc = (s: string) => s.replace(/([\\;,:"])/g, '\\$1')
+  if (!c.wifi.password) return `WIFI:T:nopass;S:${esc(c.wifi.ssid)};;`
+  return `WIFI:T:WPA;S:${esc(c.wifi.ssid)};P:${esc(c.wifi.password)};;`
+}
 
 export function visibleTiles(c: PropertyConfig): TileKey[] {
   return TILE_ORDER.filter((k) => c.appearance.tiles[k] && (k !== 'ask' || c.ask.enabled))

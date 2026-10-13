@@ -19,7 +19,6 @@ export function Landing({ onSignedIn }: { onSignedIn: (h: Host) => void }) {
         <a className="brand" href="/"><span className="brand-dot" /> Stayboard</a>
         <nav className="l-nav">
           <a href="#how">How it works</a>
-          <a href="https://github.com/kalashshah/stayboard" target="_blank" rel="noreferrer">Open source</a>
           <button className="btn sm" onClick={() => setAuth('login')}>Sign in</button>
           <button className="btn primary sm" onClick={() => setAuth('signup')}>Create your screen</button>
         </nav>
@@ -65,7 +64,7 @@ export function Landing({ onSignedIn }: { onSignedIn: (h: Host) => void }) {
           <Point t="Every section is yours" d="Headline with the guest's name, message, check-in and checkout, Wi-Fi with a scannable code, rules, guide, FAQs, local picks, contacts." />
           <Point t="Looks like your place" d="Accent color, light or dark, your own background photo, and switch any tile off." />
           <Point t="Grounded answers" d="Amazon Nova reads only your house guide. If it isn't in there, the TV says so and points guests to you." />
-          <Point t="Private by design" d="No guest accounts, no tracking. The TV only ever holds a pairing code." />
+          <Point t="Private by design" d="No guest accounts, no tracking. The TV holds your house guide and a pairing secret, nothing about your guests." />
         </div>
       </section>
 

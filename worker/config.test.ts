@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defaultConfig, parseConfig } from './config'
+import { defaultConfig, headlineFor, parseConfig, wifiQr } from './config'
 
 describe('property config', () => {
   it('default config validates and names the property', () => {
@@ -35,5 +35,41 @@ describe('property config', () => {
     const c = defaultConfig('X')
     c.appearance.accent = 'red'
     expect(parseConfig(c).ok).toBe(false)
+  })
+})
+
+describe('headlineFor', () => {
+  const base = defaultConfig('X')
+  const with_ = (headline: string, guestName: string) => ({ ...base, welcome: { ...base.welcome, headline, guestName } })
+  it('substitutes the bare name', () => {
+    expect(headlineFor(with_('Hi {guest}!', 'Sam'))).toBe('Hi Sam!')
+    expect(headlineFor(with_('Welcome, {guest}', 'Sam'))).toBe('Welcome, Sam')
+  })
+  it('drops the placeholder and dangling punctuation when there is no guest', () => {
+    expect(headlineFor(with_('Welcome, {guest}', ''))).toBe('Welcome')
+    expect(headlineFor(with_('Hi {guest}!', ''))).toBe('Hi!')
+    expect(headlineFor(with_('{guest}, welcome home', ''))).toBe('Welcome home')
+  })
+  it('default headline reads well with and without a guest', () => {
+    expect(headlineFor(with_(base.welcome.headline, 'Sam'))).toBe('Welcome, Sam')
+    expect(headlineFor(with_(base.welcome.headline, ''))).toBe('Welcome')
+  })
+})
+
+describe('wifiQr', () => {
+  it('encodes WPA networks and escapes specials', () => {
+    const c = { ...defaultConfig('X'), wifi: { ssid: 'Loft;Net', password: 'p:a,s"s' } }
+    expect(wifiQr(c)).toBe('WIFI:T:WPA;S:Loft\\;Net;P:p\\:a\\,s\\"s;;')
+  })
+  it('marks open networks as nopass', () => {
+    const c = { ...defaultConfig('X'), wifi: { ssid: 'CafeFree', password: '' } }
+    expect(wifiQr(c)).toBe('WIFI:T:nopass;S:CafeFree;;')
+  })
+})
+
+describe('required names', () => {
+  it('rejects an empty property or host name', () => {
+    expect(parseConfig({ ...defaultConfig('X'), name: '  ' }).ok).toBe(false)
+    expect(parseConfig({ ...defaultConfig('X'), hostName: '' }).ok).toBe(false)
   })
 })
