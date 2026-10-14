@@ -1,6 +1,7 @@
 // Thin D1 helpers. Every function takes env and returns plain rows.
 import { hashPassword, newId, newSecret, randomCode, slugFor } from './auth'
 import { defaultConfig, upgradeConfig, type PropertyConfig } from './config'
+import { deletePrefix } from './media'
 
 export type Host = { id: string; email: string }
 export type PropertyRow = { id: string; host_id: string; slug: string; config: string; updated_at: number; created_at: number }
@@ -110,6 +111,7 @@ export async function updateConfig(env: Env, id: string, config: PropertyConfig)
 }
 
 export async function deleteProperty(env: Env, id: string) {
+  await deletePrefix(env, id)
   await env.DB.batch([
     env.DB.prepare('UPDATE devices SET property_id = NULL, paired_at = NULL WHERE property_id = ?1').bind(id),
     env.DB.prepare('DELETE FROM questions WHERE property_id = ?1').bind(id),

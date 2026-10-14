@@ -2,7 +2,8 @@ import { Hono } from 'hono'
 import { createMiddleware } from 'hono/factory'
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { ask, GUEST_DAILY_CAP, today, TV_DAILY_CAP, validQuestion } from './ask'
-import { newSecret, verifyPassword } from './auth'
+import { newId, newSecret, verifyPassword } from './auth'
+import { checkUpload, listMedia, usedBytes } from './media'
 import { parseConfig } from './config'
 import {
   createDevice, createHost, createProperty, createSession, deleteProperty, deleteQuestion, deleteSession,
@@ -152,6 +153,34 @@ api.delete('/properties/:id/questions/:qid', async (c) => {
   const p = await ownProperty(c)
   if (!p) return c.json({ error: 'Not found' }, 404)
   await deleteQuestion(c.env, c.req.param('qid'), p.id)
+  return c.json({ ok: true })
+})
+
+// ---- media (host uploads, stored in R2, served publicly from /m/) ----
+api.get('/properties/:id/media', async (c) => {
+  const p = await ownProperty(c)
+  if (!p) return c.json({ error: 'Not found' }, 404)
+  return c.json({ files: await listMedia(c.env, p.id) })
+})
+
+api.put('/properties/:id/media', async (c) => {
+  const p = await ownProperty(c)
+  if (!p) return c.json({ error: 'Not found' }, 404)
+  const size = Number(c.req.header('content-length') ?? 0)
+  const v = checkUpload(c.req.query('kind') ?? '', c.req.header('content-type') ?? '', size, await usedBytes(c.env, p.id))
+  if (!v.ok) return c.json({ error: v.error }, v.status)
+  const key = `${p.id}/${newId()}.${v.ext}`
+  await c.env.MEDIA.put(key, c.req.raw.body, {
+    httpMetadata: { contentType: v.contentType },
+    customMetadata: { name: (c.req.query('name') ?? '').slice(0, 120), kind: v.kind },
+  })
+  return c.json({ key, url: `${c.env.APP_URL}/m/${key}`, size })
+})
+
+api.delete('/properties/:id/media/:file', async (c) => {
+  const p = await ownProperty(c)
+  if (!p) return c.json({ error: 'Not found' }, 404)
+  await c.env.MEDIA.delete(`${p.id}/${c.req.param('file')}`) // key rebuilt from the owned property: no cross-host deletes
   return c.json({ ok: true })
 })
 
