@@ -11,6 +11,7 @@ import { Places } from './screens/Places'
 import { Rules } from './screens/Rules'
 import { Wifi } from './screens/Wifi'
 import type { TileKey, TvState } from './types'
+import { Music } from './Music'
 import { Screen, themeFor } from './ui'
 
 const PAIR_POLL_MS = 5_000
@@ -115,7 +116,8 @@ export const App = () => {
   const top = stack[stack.length - 1]
   const props = { c, theme, onBack: back }
   return (
-    <Screen theme={theme} photo={c.appearance.backgroundUrl || undefined}>
+    <Screen theme={theme} c={c}>
+      <Music enabled={c.design.music.enabled} url={c.design.music.url} volume={c.design.music.volume} />
       {top === undefined && <Home c={c} theme={theme} onOpen={open} notice={notice} />}
       {top === 'wifi' && <Wifi {...props} />}
       {top === 'checkout' && <Checkout {...props} />}

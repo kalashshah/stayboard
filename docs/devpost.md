@@ -15,11 +15,12 @@ Every short-term-rental host answers the same five questions every week: the Wi-
 - A **Fire TV app (Vega OS)** that turns on to a welcome screen with the guest's name, Wi-Fi with a scannable QR code, checkout checklist, house rules, a house guide, local picks and contacts.
 - **Ask the house**: guests pick a question or type one on the TV (or scan a QR code and ask from their phone). Amazon Nova 2 Lite answers only from the host's guide. If the guide doesn't cover it, the TV says so and points to the host.
 - A **host dashboard** with a live preview of the TV, autosave, pairing by a six-letter code, and an **inbox** where unanswered questions become FAQs with one click. The TV picks up changes within a minute.
+- A **design studio**: looping background video, photo or slideshow, background music, five layouts, three bundled typefaces, colours, a logo, and tiles the host can rename, reorder by drag, or hide. Uploads land in Cloudflare R2; the TV plays them through Vega's W3C media API.
 
 ## How we built it
 
-- TV: React Native 0.83 for Vega (`@amazon-devices/react-native-kepler`), `TVFocusGuideView` for D-pad focus, `@amazon-devices/react-native-qrcode-svg`, AsyncStorage for the device secret and the last config. Tested on the Vega Virtual Device.
-- Backend: Cloudflare Worker (Hono) + D1. Bedrock Converse API with a system prompt built from the property config; strict JSON output; daily caps.
+- TV: React Native 0.83 for Vega (`@amazon-devices/react-native-kepler`), `TVFocusGuideView` for D-pad focus, `@amazon-devices/react-native-w3cmedia` `<Video>`/`<Audio>` for the backdrop and music, bundled OFL fonts, `@amazon-devices/react-native-qrcode-svg`, AsyncStorage for the device secret and the last config. Tested on the Vega Virtual Device.
+- Backend: Cloudflare Worker (Hono) + D1 + R2. Bedrock Converse API with a system prompt built from the property config; strict JSON output; daily caps. One layout engine (`layoutFor`/`backdropFor`) shared by the TV, the web preview and the guest page.
 - Dashboard and guest page: React 19 + Vite served by the same Worker.
 
 ## Challenges
@@ -34,5 +35,6 @@ Appstore submission, booking-calendar sync for guest names and dates, multi-lang
 
 - **Vega SDK / Virtual Device:** installer and template are excellent; please document the logical resolution, add `vega virtual-device screenshot`, and document `inputd-cli`.
 - **React Native for Vega:** `TVFocusGuideView autoFocus` and `hasTVPreferredFocus` were enough for a full D-pad app without a navigation library. The `TextInput` `auxOptions`/`keyboardUiMode` props are a nice touch.
+- **W3C media on Vega:** `<Video>` and `<Audio>` played https MP4/MP3 on the virtual device first try, but `<Video>` silently draws nothing without `width`/`height` props, the eight manifest services plus the module id are only discoverable by reading `node_modules`, and bundled fonts must be referenced by file name. All in the friction log.
 - **Amazon Bedrock Nova 2 Lite:** fast, cheap, followed the JSON-only instruction on every call. No complaints.
 - **Devpost:** the hackathon page blocks non-browser clients, which made it hard to re-read the rules while building.

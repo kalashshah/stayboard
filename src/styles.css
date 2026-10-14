@@ -333,10 +333,10 @@ strong.code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; lette
 .tv-tile { flex: 1 1 0; min-width: 0; border-radius: var(--r); background: var(--tile-bg); border: var(--tile-border); padding: 1.35cqw; display: grid; gap: 0.3cqw; align-content: end; min-height: 10.9cqw; backdrop-filter: blur(10px); }
 .tv-glyph { font-size: 2.3cqw; line-height: 1; margin-bottom: 0.6cqw; opacity: 0.95; }
 .tv-tile-text { display: grid; gap: 0.2cqw; min-width: 0; }
-.tv-tile-t { font-size: 1.56cqw; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tv-tile-t { font-size: 1.46cqw; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tv-tile-s { font-size: 1.15cqw; line-height: 1.25; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.tv[data-tiles="compact"] .tv-tile { min-height: 7.5cqw; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.9cqw; padding: 1cqw 1.2cqw; }
-.tv[data-tiles="compact"] .tv-glyph { margin: 0; font-size: 2cqw; }
+.tv[data-tiles="compact"] .tv-tile { min-height: 7.3cqw; padding: 1cqw 1.2cqw; }
+.tv[data-tiles="compact"] .tv-glyph { display: none; }
 .tv[data-tiles="middle"] .tv-grid { align-self: center; }
 .tv-foot { font-size: 1.25cqw; }
 .tv-frame { background: #111; border-radius: 1.6cqw; padding: 1.4%; box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.06); container-type: inline-size; }

@@ -2,7 +2,7 @@
 
 **Your rental's welcome screen, on the Fire TV. Guests ask the TV; you answer once.**
 
-Stayboard is a Fire TV app built on **Vega OS** for short-term rentals. The host configures everything on a website: Wi-Fi, check-in and checkout, house rules, a house guide, FAQs, local picks, contacts, colors and tiles. The TV shows it the moment it turns on. Guests can **ask the TV anything** and get an answer grounded in the host's own content via **Amazon Bedrock (Nova 2 Lite)**. Questions the guide can't answer land in the host's inbox as a one-click FAQ, so the next guest gets an instant answer.
+Stayboard is a Fire TV app built on **Vega OS** for short-term rentals. The host configures everything on a website: Wi-Fi, check-in and checkout, house rules, a house guide, FAQs, local picks, contacts. A **design studio** sets how the screen looks: a looping background video, photo or slideshow, music, five layouts, three typefaces, colours, a logo, and tiles you can rename, reorder or hide. The TV shows it the moment it turns on. Guests can **ask the TV anything** and get an answer grounded in the host's own content via **Amazon Bedrock (Nova 2 Lite)**. Questions the guide can't answer land in the host's inbox as a one-click FAQ, so the next guest gets an instant answer.
 
 Built for the Amazon "Build, Ship, Shape" Developer Hackathon 2026, Fire TV track (also the AWS Builder and Open Source mini-challenges).
 
@@ -18,10 +18,25 @@ Welcome-screen apps already exist on Fire TV (Hello Guest Screen, WelcomeScreen,
 
 | Part | Where | Stack |
 |---|---|---|
-| Fire TV app | `tv/` | React Native 0.83 for Vega (`@amazon-devices/react-native-kepler` 4), QR codes, AsyncStorage |
-| API + database | `worker/`, `migrations/` | Cloudflare Worker (Hono), D1 (SQLite), Amazon Bedrock Nova 2 Lite via `aws4fetch` |
-| Host dashboard | `src/` | React 19 + Vite, live 16:9 preview of the TV screen, autosave |
-| Guest phone page | `src/pages/Guest.tsx` | Same SPA at `/g/<slug>`, reached from a QR code on the TV |
+| Fire TV app | `tv/` | React Native 0.83 for Vega (`@amazon-devices/react-native-kepler` 4), `react-native-w3cmedia` for video and audio, QR codes, AsyncStorage, bundled fonts |
+| API + database + media | `worker/`, `migrations/` | Cloudflare Worker (Hono), D1 (SQLite), R2 for host uploads (ranged, immutable), Amazon Bedrock Nova 2 Lite via `aws4fetch` |
+| Host dashboard | `src/` | React 19 + Vite, design studio with a live framed preview of the TV, drag-to-reorder tiles, uploads with progress, autosave |
+| Guest phone page | `src/pages/Guest.tsx` | Same SPA at `/g/<slug>`, reached from a QR code on the TV; same backdrop, font and tile order as the TV |
+
+### Design studio
+
+One `design` object in the property config drives three renderers (TV, web preview, guest page) through the same pure helpers (`layoutFor`, `backdropFor`, `tileSub` in `worker/config.ts`, mirrored in `tv/src/types.ts`):
+
+| Control | Options |
+|---|---|
+| Backdrop | Colour with an accent glow · one photo · slideshow of up to 8 photos (5–60 s, crossfade) · looping muted video with a poster frame. Darken and blur sliders. |
+| Music | One MP3/M4A, loops on the TV at the chosen volume. Never plays on the phone page. |
+| Layout | Hero · Centered · Split (text beside the media) · Poster (full-bleed, compact tiles) · Minimal. Every layout keeps one left-to-right tile row for the remote. |
+| Type | Inter, Fraunces or Space Grotesk (OFL, bundled in the TV app), headline size, alignment. |
+| Tiles | Drag by the grip (mouse or touch) or use ↑↓, rename, custom subtitle, 14 icons, show/hide. |
+| Details | Accent colour, dark/light, glass/solid/outline tiles, sharp/rounded/pill corners, logo, clock, footer. |
+
+Uploads go straight to R2 through the Worker (`PUT /api/properties/:id/media`): MP4 up to 40 MB, MP3/M4A up to 10 MB, JPG/PNG/WebP up to 5 MB, 150 MB per property. The browser captures a JPEG poster from uploaded videos so the phone page has a still. Files are served from `/m/<property>/<file>` with `Range` support and a one-year immutable cache.
 
 ### TV screens
 
@@ -42,6 +57,7 @@ Prerequisites: Node 20+, a Cloudflare account, an AWS account with Bedrock acces
 npm install
 npx wrangler d1 create stayboard            # put the id in wrangler.jsonc
 npx wrangler d1 migrations apply stayboard --remote
+npx wrangler r2 bucket create stayboard-media   # host uploads (free tier is plenty)
 cp .dev.vars.example .dev.vars              # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (IAM user with bedrock:InvokeModel only)
                                             # GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (OAuth web client; redirect URI <origin>/api/auth/google/callback)
 npx wrangler secret bulk .dev.vars
@@ -62,9 +78,10 @@ For a real Fire TV Stick running Vega OS: enable developer mode, `vega device in
 
 1. Open https://stayboard.kalashshah47.workers.dev and create an account (Continue with Google, or any email and a password of 8+ characters).
 2. Create a property. It comes pre-filled with a sensible house guide; edit anything and watch the TV preview on the right update.
-3. Open **Guest page ↗** on your phone: that's exactly what the TV shows, plus the ask box. Ask "when is checkout?" then "is there a hair dryer?".
-4. Back in the editor, open **Inbox**: the hair-dryer question is waiting. Click **Add as FAQ**, type the answer. Ask again on the phone.
-5. To see the real TV app, run it on the Vega Virtual Device (above) and pair it from **Devices** with the six-letter code the TV shows.
+3. Open **Design studio**: drop in a short MP4 (or paste an https link), pick **Poster** and **Fraunces**, drag a tile to a new spot. The preview plays the video; the TV would too.
+4. Open **Guest page ↗** on your phone: that's exactly what the TV shows, plus the ask box. Ask "when is checkout?" then "is there a hair dryer?".
+5. Back in the editor, open **Inbox**: the hair-dryer question is waiting. Click **Add as FAQ**, type the answer. Ask again on the phone.
+6. To see the real TV app, run it on the Vega Virtual Device (above) and pair it from **Devices** with the six-letter code the TV shows.
 
 ## Screenshots (Vega Virtual Device and dashboard)
 
@@ -83,6 +100,7 @@ For a real Fire TV Stick running Vega OS: enable developer mode, `vega device in
 - Passwords: PBKDF2-SHA256, 100k iterations, Web Crypto. Sessions: HttpOnly, Secure, SameSite=Lax cookie, 30 days.
 - TVs authenticate with a random 32-byte secret that is never shown to anyone; hosts only see the six-letter pairing code.
 - The guest page exposes exactly what the TV shows. Questions are stored as text only.
+- Uploads are type- and size-checked in the Worker, stored under the property's own prefix, deleted with the property, and served without listing. URL fields accept `https://` only.
 - The IAM user can only call `bedrock:InvokeModel` on Nova 2 Lite. A $3/month budget alarm is on the account.
 
 ## Path to production

@@ -1,5 +1,5 @@
 import AsyncStorage from '@amazon-devices/react-native-async-storage__async-storage'
-import type { Answer, PropertyConfig, TvState } from './types'
+import { upgradeConfig, type Answer, type PropertyConfig, type TvState } from './types'
 
 export const API_BASE = 'https://stayboard.kalashshah47.workers.dev'
 
@@ -38,7 +38,9 @@ export const saveSecret = (s: string) => AsyncStorage.setItem(KEY_SECRET, s)
 export async function loadCachedState(): Promise<TvState | null> {
   try {
     const raw = await AsyncStorage.getItem(KEY_STATE)
-    return raw ? (JSON.parse(raw) as TvState) : null
+    const s = raw ? (JSON.parse(raw) as TvState) : null
+    if (s?.paired) s.config = upgradeConfig(s.config) // a cache written by an older build has no `design`
+    return s
   } catch {
     return null
   }

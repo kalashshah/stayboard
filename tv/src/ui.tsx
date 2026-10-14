@@ -1,28 +1,41 @@
 // Shared TV building blocks: theme from the config, focusable buttons, screen chrome.
 import React, { useState } from 'react'
-import { ImageBackground, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native'
-import type { PropertyConfig } from './types'
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native'
+import { Backdrop } from './Backdrop'
+import { FONT, RADIUS, type PropertyConfig } from './types'
 
-export type Theme = { accent: string; bg: string; ink: string; sub: string; tile: string; tileFocus: string; card: string; line: string; dark: boolean }
+export type Theme = {
+  accent: string; bg: string; ink: string; sub: string; tile: string; tileBorder: string; tileBorderWidth: number
+  radius: number; font: string; fontBold: string; card: string; line: string; dark: boolean
+}
 
 export function themeFor(c?: PropertyConfig | null): Theme {
   const accent = c?.appearance.accent ?? '#c2562e'
   const dark = (c?.appearance.theme ?? 'dark') === 'dark'
-  return dark
-    ? { accent, bg: '#100e0d', ink: '#ffffff', sub: 'rgba(255,255,255,0.72)', tile: 'rgba(255,255,255,0.08)', tileFocus: accent, card: 'rgba(255,255,255,0.07)', line: 'rgba(255,255,255,0.14)', dark }
-    : { accent, bg: '#f7f2ee', ink: '#1c1c1c', sub: 'rgba(28,28,28,0.68)', tile: 'rgba(255,255,255,0.8)', tileFocus: accent, card: 'rgba(255,255,255,0.85)', line: 'rgba(28,28,28,0.12)', dark }
+  const d = c?.design
+  const style = d?.tileStyle ?? 'glass'
+  const tile = style === 'solid' ? (dark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.92)') : style === 'outline' ? 'transparent' : dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.8)'
+  const tileBorder = style === 'outline' ? (dark ? 'rgba(255,255,255,0.45)' : 'rgba(28,28,28,0.3)') : style === 'glass' ? (dark ? 'rgba(255,255,255,0.14)' : 'rgba(28,28,28,0.08)') : 'transparent'
+  const fonts = FONT[d?.font ?? 'sans']
+  return {
+    accent, dark, tile, tileBorder, tileBorderWidth: style === 'outline' ? 2 : 1,
+    radius: RADIUS[d?.radius ?? 'rounded'], font: fonts.regular, fontBold: fonts.bold,
+    bg: dark ? '#100e0d' : '#f7f2ee',
+    ink: dark ? '#ffffff' : '#1c1c1c',
+    sub: dark ? 'rgba(255,255,255,0.72)' : 'rgba(28,28,28,0.68)',
+    card: dark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.85)',
+    line: dark ? 'rgba(255,255,255,0.14)' : 'rgba(28,28,28,0.12)',
+  }
 }
 
-/** Full-screen background: photo if set, else flat color with an accent glow. */
-export function Screen({ theme, photo, children }: { theme: Theme; photo?: string; children: React.ReactNode }) {
-  const body = (
-    <View style={[styles.screen, { backgroundColor: photo ? 'transparent' : theme.bg }]}>
-      {!photo && <View style={[styles.glow, { backgroundColor: theme.accent, opacity: theme.dark ? 0.32 : 0.18 }]} />}
-      {photo && <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.55)' }]} />}
+/** Full-screen chrome: the configured backdrop (or a flat color with an accent glow before pairing) under the content. */
+export function Screen({ theme, c, children }: { theme: Theme; c?: PropertyConfig | null; children: React.ReactNode }) {
+  return (
+    <View style={[styles.screen, { backgroundColor: theme.bg }]}>
+      {c ? <Backdrop c={c} theme={theme} /> : <View style={[styles.glow, { backgroundColor: theme.accent, opacity: theme.dark ? 0.32 : 0.18 }]} />}
       {children}
     </View>
   )
-  return photo ? <ImageBackground source={{ uri: photo }} style={styles.screen} resizeMode="cover">{body}</ImageBackground> : body
 }
 
 export function Focusable({
@@ -59,7 +72,7 @@ export function Header({ theme, title, sub, onBack }: { theme: Theme; title: str
     <View style={styles.header}>
       <BackButton theme={theme} onPress={onBack} />
       <View style={{ flex: 1 }}>
-        <Text style={[styles.title, { color: theme.ink }]}>{title}</Text>
+        <Text style={[styles.title, { color: theme.ink, fontFamily: theme.fontBold }]}>{title}</Text>
         {sub ? <Text style={[styles.sub, { color: theme.sub }]}>{sub}</Text> : null}
       </View>
     </View>
@@ -83,7 +96,7 @@ const styles = StyleSheet.create({
   back: { alignSelf: 'flex-start', borderWidth: 2, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 6, marginRight: 14 },
   backText: { fontSize: 13, fontWeight: '600' },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
-  title: { fontSize: 30, fontWeight: '600', letterSpacing: -0.5 },
+  title: { fontSize: 30, letterSpacing: -0.5 },
   sub: { fontSize: 13, marginTop: 2 },
   card: { borderRadius: 14, borderWidth: 1, padding: 16 },
 })
