@@ -24,6 +24,16 @@ What slowed us down while building a Vega app plus an AWS-backed service in one 
 
 9. **Nothing to report on the model.** Nova 2 Lite through the Converse API answered grounded questions correctly on the first try, returned clean JSON when asked, and costs well under a cent per question. The IAM policy that scopes a user to one inference profile plus the foundation model ARN worked unchanged from our previous project.
 
+## Media and fonts (`@amazon-devices/react-native-w3cmedia`)
+
+10. **The `<Video>` component draws nothing unless you pass `width` and `height` props.** Styling it with `StyleSheet.absoluteFill` gave a playing element (the `playing` event fired, `currentTime` advanced) and an empty box. Adding `width={…} height={…}` made frames appear. Neither the README nor the "W3C Media API" guide says the props are required. *Severity: medium.* The package's `VideoProps` typing lists them as optional.
+
+11. **Manifest needs eight `[[wants.service]]` entries plus an `[offers]` block, and the module id is only in `kepler-compatibility.json`.** The README lists the services but not the `[[needs.module]] id = "/com.amazon.kepler.w3cmedia_2@IW3cmedia_3"` line; I found the id by opening `node_modules/@amazon-devices/react-native-w3cmedia/kepler-compatibility.json`. A `vega` CLI command that prints the manifest lines a dependency needs would remove this step entirely. *Severity: medium.*
+
+12. **Bundled fonts are addressed by file name, not family name.** TTFs in `assets/fonts/` ship inside the `.vpkg` with no config, which is great, but `fontFamily: 'Fraunces'` silently falls back to the system font while `fontFamily: 'Fraunces-Regular'` (the file name) works, and `fontWeight: '600'` does not pick `Fraunces-SemiBold.ttf` for you. The expo-font page hints at the file-name rule; the core docs don't mention it. *Severity: low.*
+
+**What worked:** on the Vega Virtual Device an https MP4 looped (muted) and an https MP3 reached `playing` with `<Audio autoplay loop volume>` on the first try, and all of our Unicode tile glyphs rendered (two as colour emoji).
+
 ## What worked well
 
 - The one-line SDK installer, the `helloWorld` template and `vega run-app … -d VirtualDevice` took a fresh Mac from zero to an app on the virtual TV in about twenty minutes.
