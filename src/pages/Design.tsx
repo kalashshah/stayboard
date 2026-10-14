@@ -55,7 +55,7 @@ export function DesignTab({ id, c, update }: Props) {
         {b.kind === 'video' && (
           <>
             <Upload id={id} kind="video" label="Background video" value={b.video} poster={b.poster} onChange={(u, x) => bd({ video: u, poster: x?.poster ?? (u ? b.poster : '') })} />
-            <p className="muted small">Plays muted on a loop. Keep it under 40 MB and around 15–30 seconds; a still of the first frame is captured for the phone page.</p>
+            <p className="muted small">Plays muted on a loop. 1080p looks best; keep it under 40 MB and around 15–30 seconds. A still of the first frame is captured for the phone page.</p>
             {b.video && !b.poster && (
               <Upload id={id} kind="image" compact label="Poster frame (optional)" value={b.poster} onChange={(u) => bd({ poster: u })} />
             )}

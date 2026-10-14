@@ -1,22 +1,11 @@
 import { TVFocusGuideView } from '@amazon-devices/react-native-kepler'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Image, StyleSheet, Text, View } from 'react-native'
 import { backdropFor, headlineFor, ICONS, layoutFor, tileLabel, tileSub, visibleTiles, type PropertyConfig, type TileKey } from '../types'
-import { Focusable, PAD, type Theme } from '../ui'
-
-function clock() {
-  const d = new Date()
-  const h = d.getHours()
-  const m = d.getMinutes().toString().padStart(2, '0')
-  return `${h % 12 || 12}:${m} ${h < 12 ? 'AM' : 'PM'}`
-}
+import { Fade, Focusable, PAD, useClock, type Theme } from '../ui'
 
 export function Home({ c, theme, onOpen, notice }: { c: PropertyConfig; theme: Theme; onOpen: (k: TileKey) => void; notice: string }) {
-  const [time, setTime] = useState(clock())
-  useEffect(() => {
-    const id = setInterval(() => setTime(clock()), 15_000)
-    return () => clearInterval(id)
-  }, [])
+  const time = useClock()
   const d = c.design
   const L = layoutFor(c)
   const tiles = visibleTiles(c)
@@ -28,7 +17,7 @@ export function Home({ c, theme, onOpen, notice }: { c: PropertyConfig; theme: T
   const clockText = <Text style={[styles.time, { color: theme.sub, fontFamily: theme.font }]}>{notice ? `${notice}  ·  ` : ''}{d.showClock ? time : ''}</Text>
 
   return (
-    <View style={[styles.wrap, L.tiles === 'middle' && { justifyContent: 'flex-start' }]}>
+    <Fade style={[styles.wrap, L.tiles === 'middle' && { justifyContent: 'flex-start' }]}>
       {L.topBar !== 'none' && (
         <View style={[styles.top, L.topBar === 'centered' && { justifyContent: 'center' }]}>
           {L.topBar === 'logo' && !d.logo ? <View /> : brand}
@@ -50,6 +39,8 @@ export function Home({ c, theme, onOpen, notice }: { c: PropertyConfig; theme: T
         {tiles.map((t, i) => (
           <Focusable
             key={t.key}
+            theme={theme}
+            lift={1.05}
             testID={`tile-${t.key}`}
             hasTVPreferredFocus={i === 0}
             onPress={() => onOpen(t.key)}
@@ -58,9 +49,9 @@ export function Home({ c, theme, onOpen, notice }: { c: PropertyConfig; theme: T
               { backgroundColor: t.key === 'ask' ? theme.accent : theme.tile, borderColor: t.key === 'ask' ? 'transparent' : theme.tileBorder, borderWidth: theme.tileBorderWidth, borderRadius: theme.radius },
               L.tiles === 'middle' && { flex: 0, width: 118, height: 105 },
             ]}
-            focusStyle={{ backgroundColor: theme.accent, borderColor: '#fff', transform: [{ scale: 1.06 }] }}>
-            {(f) => {
-              const on = f || t.key === 'ask'
+            focusStyle={t.key === 'ask' ? { borderColor: '#fff' } : undefined}>
+            {() => {
+              const on = t.key === 'ask'
               return (
                 <>
                   {!compact && <Text style={[styles.glyph, { color: on ? '#fff' : theme.ink }]}>{ICONS[t.icon]}</Text>}
@@ -78,7 +69,7 @@ export function Home({ c, theme, onOpen, notice }: { c: PropertyConfig; theme: T
       {L.footer && (
         <Text style={[styles.foot, { color: theme.sub, fontFamily: theme.font, textAlign: center ? 'center' : 'left' }]}>Hosted by {c.hostName}  ·  Check-in {c.stay.checkIn}  ·  Checkout {c.stay.checkOut}</Text>
       )}
-    </View>
+    </Fade>
   )
 }
 
@@ -95,7 +86,7 @@ function MediaCard({ c, theme }: { c: PropertyConfig; theme: Theme }) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 28, justifyContent: 'space-between', gap: 14 },
+  wrap: { paddingHorizontal: PAD, paddingVertical: 28, justifyContent: 'space-between', gap: 14 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', minHeight: 28 },
   clockRight: { position: 'absolute', right: 0 },
   name: { fontSize: 15, letterSpacing: -0.25 },

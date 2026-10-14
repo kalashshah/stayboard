@@ -116,7 +116,7 @@ export const App = () => {
   const top = stack[stack.length - 1]
   const props = { c, theme, onBack: back }
   return (
-    <Screen theme={theme} c={c}>
+    <Screen theme={theme} c={c} dim={stack.length > 0}>
       <Music enabled={c.design.music.enabled} url={c.design.music.url} volume={c.design.music.volume} />
       {top === undefined && <Home c={c} theme={theme} onOpen={open} notice={notice} />}
       {top === 'wifi' && <Wifi {...props} />}

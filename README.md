@@ -36,7 +36,7 @@ One `design` object in the property config drives three renderers (TV, web previ
 | Tiles | Drag by the grip (mouse or touch) or use ↑↓, rename, custom subtitle, 14 icons, show/hide. |
 | Details | Accent colour, dark/light, glass/solid/outline tiles, sharp/rounded/pill corners, logo, clock, footer. |
 
-Uploads go straight to R2 through the Worker (`PUT /api/properties/:id/media`): MP4 up to 40 MB, MP3/M4A up to 10 MB, JPG/PNG/WebP up to 5 MB, 150 MB per property. The browser captures a JPEG poster from uploaded videos so the phone page has a still. Files are served from `/m/<property>/<file>` with `Range` support and a one-year immutable cache.
+Background video looks best at 1080p: the simulator's software scaler shows faint seams when it upscales smaller clips, and real TVs are 1080p or 4K anyway. Uploads go straight to R2 through the Worker (`PUT /api/properties/:id/media`): MP4 up to 40 MB, MP3/M4A up to 10 MB, JPG/PNG/WebP up to 5 MB, 150 MB per property. The browser captures a JPEG poster from uploaded videos so the phone page has a still. Files are served from `/m/<property>/<file>` with `Range` support and a one-year immutable cache.
 
 ### TV screens
 
@@ -99,10 +99,10 @@ The rest of the app:
 | | |
 |---|---|
 | ![Pair](docs/media/tv-pair.png) | ![Home](docs/media/tv-home.png) |
-| ![Wi-Fi](docs/media/tv-wifi.png) | ![Checkout](docs/media/tv-checkout.png) |
+| ![Wi-Fi](docs/media/tv-wifi.png) | ![Your stay](docs/media/tv-checkout.png) |
 | ![Guide](docs/media/tv-guide.png) | ![Local picks](docs/media/tv-places.png) |
 | ![Ask](docs/media/tv-ask.png) | ![Answer](docs/media/tv-ask-answer.png) |
-| ![Keyboard](docs/media/tv-keyboard.png) | ![Unanswered](docs/media/tv-ask-unanswered.png) |
+| ![House rules](docs/media/tv-rules.png) | ![Contacts](docs/media/tv-contacts.png) |
 | ![Landing](docs/media/web-landing.png) | ![Editor](docs/media/web-editor.png) |
 | ![Inbox](docs/media/web-inbox.png) | ![Guest page](docs/media/phone-guest.png) |
 

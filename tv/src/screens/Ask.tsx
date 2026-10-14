@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { askHouse } from '../api'
 import type { Answer, PropertyConfig } from '../types'
-import { Card, Focusable, Header, Mono, PAD, type Theme } from '../ui'
+import { Chip, Chrome, Dots, Eyebrow, Fade, Focusable, PAD, Panel, type Theme } from '../ui'
 
 // Vega-only TextInput props (TV keyboard title + size); kept as a loose object so the RN types stay happy.
 const tvKeyboard = { auxOptions: 'title:Ask the house', keyboardUiMode: 'half-screen' } as object
@@ -30,73 +30,85 @@ export function Ask({ c, theme, onBack, secret, guestUrl }: { c: PropertyConfig;
   }
 
   return (
-    <View style={styles.wrap}>
-      <Header theme={theme} title="Ask the house" sub={`Answers come from ${c.hostName}'s house guide`} onBack={onBack} />
+    <Fade style={styles.wrap}>
+      <Chrome c={c} theme={theme} title="Ask the house" sub={`Answers come from ${c.hostName}'s house guide, nothing else`} onBack={onBack} />
       <View style={styles.body}>
         <View style={styles.left}>
-          <TextInput
-            {...tvKeyboard}
-            value={q}
-            onChangeText={setQ}
-            placeholder="Type a question, e.g. Is there a hair dryer?"
-            placeholderTextColor={theme.sub}
-            returnKeyType="search"
-            onSubmitEditing={() => send(q)}
-            style={[styles.input, { color: theme.ink, borderColor: theme.line, backgroundColor: theme.card }]}
-            testID="ask-input"
-          />
+          <View style={[styles.inputWrap, { backgroundColor: theme.panel, borderColor: theme.panelLine }]}>
+            <Text style={[styles.inputGlyph, { color: theme.accent }]}>?</Text>
+            <TextInput
+              {...tvKeyboard}
+              value={q}
+              onChangeText={setQ}
+              placeholder="Type a question, e.g. Is there a hair dryer?"
+              placeholderTextColor={theme.faint}
+              returnKeyType="search"
+              onSubmitEditing={() => send(q)}
+              style={[styles.input, { color: theme.ink, fontFamily: theme.font }]}
+              testID="ask-input"
+            />
+          </View>
           {c.ask.suggested.length > 0 && (
             <TVFocusGuideView autoFocus style={styles.chips}>
               {c.ask.suggested.slice(0, 4).map((s, i) => (
-                <Focusable key={s} hasTVPreferredFocus={i === 0} onPress={() => send(s)} style={[styles.chip, { borderColor: theme.line, backgroundColor: theme.card }]} focusStyle={{ backgroundColor: theme.accent }}>
-                  {(f) => <Text style={[styles.chipT, { color: f ? '#fff' : theme.ink }]}>{s}</Text>}
+                <Focusable key={s} theme={theme} hasTVPreferredFocus={i === 0} onPress={() => send(s)} style={[styles.chip, { borderColor: theme.panelLine, backgroundColor: theme.panel }]}>
+                  <Text style={[styles.chipT, { color: theme.ink, fontFamily: theme.font }]}>{s}</Text>
                 </Focusable>
               ))}
             </TVFocusGuideView>
           )}
-          <Card theme={theme} style={styles.answer}>
+          <Panel theme={theme} style={[styles.answer, { borderLeftColor: last ? theme.accent : theme.panelLine }]}>
             {busy ? (
-              <Text style={[styles.a, { color: theme.sub }]}>Checking the house guide…</Text>
+              <View style={styles.thinking}>
+                <Dots theme={theme} />
+                <Text style={[styles.hint, { color: theme.sub, fontFamily: theme.font }]}>Checking the house guide…</Text>
+              </View>
             ) : last ? (
               <>
-                <Mono theme={theme}>You asked</Mono>
-                <Text style={[styles.qText, { color: theme.sub }]}>“{last.q}”</Text>
-                <ScrollView style={{ flex: 1 }}>
-                  <Text style={[styles.a, { color: theme.ink }]}>{last.r.answer}</Text>
+                <Text style={[styles.qText, { color: theme.sub, fontFamily: theme.font }]}>“{last.q}”</Text>
+                <ScrollView style={{ maxHeight: 150, flexGrow: 0 }}>
+                  <Text style={[styles.a, { color: theme.ink, fontFamily: theme.font }]}>{last.r.answer}</Text>
                 </ScrollView>
-                {!last.r.answered && <Text style={[styles.note, { color: theme.sub }]}>Your host has been notified so they can add this to the guide.</Text>}
+                <View style={styles.answerFoot}>
+                  <Eyebrow theme={theme}>{last.r.answered ? `From ${c.hostName}'s house guide` : 'Not in the guide yet'}</Eyebrow>
+                  {!last.r.answered && <Chip theme={theme}>Your host has been told</Chip>}
+                </View>
               </>
             ) : (
-              <Text style={[styles.a, { color: theme.sub }]}>Pick a question above, or select the box to type your own.</Text>
+              <Text style={[styles.hint, { color: theme.sub, fontFamily: theme.font }]}>Pick a question, or move up to the box and type your own.</Text>
             )}
-          </Card>
+          </Panel>
         </View>
         <View style={styles.right}>
           <View style={styles.qrCard}>
-            <QRCode value={guestUrl} size={130} backgroundColor="#ffffff" color="#1c1c1c" />
+            <QRCode value={guestUrl} size={126} backgroundColor="#ffffff" color="#1c1c1c" />
           </View>
-          <Text style={[styles.qrT, { color: theme.ink }]}>Prefer your phone?</Text>
-          <Text style={[styles.qrS, { color: theme.sub }]}>Scan to read the guide and ask from there.</Text>
+          <Text style={[styles.qrT, { color: theme.ink, fontFamily: theme.fontBold }]}>Prefer your phone?</Text>
+          <Text style={[styles.qrS, { color: theme.sub, fontFamily: theme.font }]}>Scan to read the guide and ask from there.</Text>
         </View>
       </View>
-    </View>
+    </Fade>
   )
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 28 },
-  body: { flex: 1, flexDirection: 'row', gap: 30 },
+  wrap: { paddingHorizontal: PAD, paddingVertical: 24 },
+  body: { flex: 1, flexDirection: 'row', gap: 28, alignItems: 'flex-start' },
   left: { flex: 1, gap: 10 },
-  right: { width: 190, alignItems: 'center', gap: 5, paddingTop: 5 },
-  input: { fontSize: 16, borderWidth: 2, borderRadius: 11, paddingHorizontal: 14, paddingVertical: 11 },
+  right: { width: 180, alignItems: 'center', gap: 4, paddingTop: 4 },
+  inputWrap: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 999, paddingLeft: 16, paddingRight: 8 },
+  inputGlyph: { fontSize: 18, fontWeight: '700' },
+  input: { flex: 1, fontSize: 15.5, paddingVertical: 10 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  chip: { borderWidth: 2, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 6 },
-  chipT: { fontSize: 12, fontWeight: '500' },
-  answer: { flex: 1, gap: 5 },
+  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  chipT: { fontSize: 12.5 },
+  answer: { alignSelf: 'stretch', gap: 8, borderLeftWidth: 3, padding: 18 },
+  thinking: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  hint: { fontSize: 14, lineHeight: 20 },
   qText: { fontSize: 13 },
-  a: { fontSize: 17, lineHeight: 24 },
-  note: { fontSize: 11 },
-  qrCard: { backgroundColor: '#fff', padding: 10, borderRadius: 12 },
-  qrT: { fontSize: 14, fontWeight: '600', marginTop: 5 },
-  qrS: { fontSize: 11, textAlign: 'center' },
+  a: { fontSize: 17, lineHeight: 25 },
+  answerFoot: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },
+  qrCard: { backgroundColor: '#fff', padding: 10, borderRadius: 16, marginBottom: 6 },
+  qrT: { fontSize: 14 },
+  qrS: { fontSize: 11.5, textAlign: 'center', lineHeight: 16 },
 })

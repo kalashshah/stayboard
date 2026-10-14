@@ -32,6 +32,14 @@ What slowed us down while building a Vega app plus an AWS-backed service in one 
 
 12. **Bundled fonts are addressed by file name, not family name.** TTFs in `assets/fonts/` ship inside the `.vpkg` with no config, which is great, but `fontFamily: 'Fraunces'` silently falls back to the system font while `fontFamily: 'Fraunces-Regular'` (the file name) works, and `fontWeight: '600'` does not pick `Fraunces-SemiBold.ttf` for you. The expo-font page hints at the file-name rule; the core docs don't mention it. *Severity: low.*
 
+13. **A background `<Audio>` element swallows the Back button.** With the default `USAGE_MEDIA` usage, the system treats Back as "stop playback" and leaves the app; `BackHandler` never fires. Nothing in the README or the media-controls guide warns that a decorative audio track does this. Passing `audioUsage={AudioUsageType.USAGE_GAME}` fixes it. *Severity: high* for any app that plays ambient audio.
+
+14. **`<Video>` ignores `position`, `left/top` and `transform` in `style`.** It sizes itself from the `width`/`height` props and draws at the top-left of its parent; an attempt to render at native size and scale with a transform put a small video in the corner over the poster. *Severity: low.*
+
+15. **The virtual device shows horizontal seams when it upscales video.** A 640×360 clip filled to 1920×1080 renders in four slices with visible edges; a 1080p clip is clean. Worth a line in the VVD docs ("use 1080p sources"). *Severity: low*, simulator only as far as we can tell.
+
+16. **Remote-key injection has two paths and only one is complete.** `adb emu event send` stopped moving focus after a VVD restart; `inputd-cli button_press` (in the developer-mode shell) handles arrows, Enter and Back, but Back only once `vsm developer-mode enable` has been run on that boot. A single documented `vega device press-key` would remove the guesswork. *Severity: medium.*
+
 **What worked:** on the Vega Virtual Device an https MP4 looped (muted) and an https MP3 reached `playing` with `<Audio autoplay loop volume>` on the first try, and all of our Unicode tile glyphs rendered (two as colour emoji).
 
 ## What worked well

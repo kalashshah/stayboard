@@ -1,43 +1,52 @@
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import type { PropertyConfig } from '../types'
-import { Card, Header, Mono, PAD, type Theme } from '../ui'
+import { Chrome, Eyebrow, Fade, PAD, Panel, type Theme } from '../ui'
 
 export function Checkout({ c, theme, onBack }: { c: PropertyConfig; theme: Theme; onBack: () => void }) {
+  const steps = c.stay.checkoutSteps
   return (
-    <View style={styles.wrap}>
-      <Header theme={theme} title="Checkout" sub="Thanks for staying with us" onBack={onBack} />
+    <Fade style={styles.wrap}>
+      <Chrome c={c} theme={theme} title="Your stay" sub="Check-in, checkout and what to do before you go" onBack={onBack} focusBack />
       <View style={styles.body}>
-        <View style={styles.left}>
-          <Mono theme={theme}>Check-in</Mono>
-          <Text style={[styles.time, { color: theme.ink }]}>{c.stay.checkIn}</Text>
-          <View style={{ height: 15 }} />
-          <Mono theme={theme}>Checkout</Mono>
-          <Text style={[styles.time, { color: theme.accent }]}>{c.stay.checkOut}</Text>
+        <View style={styles.times}>
+          <Panel theme={theme} style={styles.time}>
+            <Eyebrow theme={theme}>Check-in</Eyebrow>
+            <Text style={[styles.t, { color: theme.ink, fontFamily: theme.fontBold }]}>{c.stay.checkIn}</Text>
+          </Panel>
+          <Panel theme={theme} style={styles.time}>
+            <Eyebrow theme={theme}>Checkout</Eyebrow>
+            <Text style={[styles.t, { color: theme.accent, fontFamily: theme.fontBold }]}>{c.stay.checkOut}</Text>
+          </Panel>
+          <Text style={[styles.thanks, { color: theme.sub, fontFamily: theme.font }]}>Thanks for staying with {c.hostName}.</Text>
         </View>
-        <Card theme={theme} style={styles.right}>
-          <Mono theme={theme}>Before you leave</Mono>
-          {c.stay.checkoutSteps.length === 0 && <Text style={[styles.step, { color: theme.sub }]}>Nothing special. Just lock up.</Text>}
-          {c.stay.checkoutSteps.map((s, i) => (
-            <View key={i} style={styles.row}>
-              <View style={[styles.num, { backgroundColor: theme.accent }]}><Text style={styles.numT}>{i + 1}</Text></View>
-              <Text style={[styles.step, { color: theme.ink }]}>{s}</Text>
-            </View>
-          ))}
-        </Card>
+        <Panel theme={theme} style={styles.list}>
+          <Eyebrow theme={theme}>Before you leave</Eyebrow>
+          <ScrollView style={{ marginTop: 6, flexGrow: 0 }}>
+            {steps.length === 0 && <Text style={[styles.step, { color: theme.sub, fontFamily: theme.font }]}>Nothing special. Just lock up and travel safe.</Text>}
+            {steps.map((s, i) => (
+              <View key={i} style={[styles.row, i < steps.length - 1 && { borderBottomWidth: 1, borderColor: theme.panelLine }]}>
+                <View style={[styles.num, { borderColor: theme.accent }]}><Text style={[styles.numT, { color: theme.accent }]}>{i + 1}</Text></View>
+                <Text style={[styles.step, { color: theme.ink, fontFamily: theme.font }]}>{s}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        </Panel>
       </View>
-    </View>
+    </Fade>
   )
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: PAD, paddingVertical: 28 },
-  body: { flex: 1, flexDirection: 'row', gap: 30, alignItems: 'flex-start' },
-  left: { flex: 0.8, gap: 3, paddingTop: 5 },
-  time: { fontSize: 42, fontWeight: '600', letterSpacing: -1 },
-  right: { flex: 1.3, gap: 11 },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  num: { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
-  numT: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  wrap: { paddingHorizontal: PAD, paddingVertical: 24 },
+  body: { flex: 1, flexDirection: 'row', gap: 20, alignItems: 'flex-start' },
+  times: { width: 250, gap: 12 },
+  time: { gap: 4, paddingVertical: 18 },
+  t: { fontSize: 34, letterSpacing: -1, lineHeight: 38 },
+  thanks: { fontSize: 12.5, paddingHorizontal: 4 },
+  list: { flex: 1, maxHeight: 360, paddingTop: 18, paddingBottom: 10 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 11 },
+  num: { width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  numT: { fontSize: 12, fontWeight: '700' },
   step: { fontSize: 16, lineHeight: 22, flex: 1 },
 })
