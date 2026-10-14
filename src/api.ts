@@ -8,6 +8,8 @@ export type Property = { id: string; slug: string; config: PropertyConfig; updat
 export type Device = { code: string; label: string | null; paired_at: number | null; last_seen_at: number | null }
 export type Question = { id: string; property_id: string; source: 'tv' | 'phone'; question: string; answer: string; answered: number; created_at: number }
 export type Answer = { answered: boolean; answer: string }
+export type MediaFile = { key: string; url: string; size: number; uploaded: number; contentType: string; name: string; kind: string }
+export type MediaKind = 'video' | 'audio' | 'image'
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -42,6 +44,24 @@ export const api = {
   unpair: (id: string, code: string) => call<{ devices: Device[] }>(`/properties/${id}/devices/${code}`, { method: 'DELETE' }),
   questions: (id: string) => call<{ questions: Question[] }>(`/properties/${id}/questions`),
   deleteQuestion: (id: string, qid: string) => call(`/properties/${id}/questions/${qid}`, { method: 'DELETE' }),
+  media: (id: string) => call<{ files: MediaFile[] }>(`/properties/${id}/media`),
+  deleteMedia: (id: string, file: string) => call(`/properties/${id}/media/${file}`, { method: 'DELETE' }),
+  /** Raw PUT through XHR so the host sees upload progress. */
+  upload: (id: string, kind: MediaKind, file: Blob, type: string, name: string, onProgress?: (p: number) => void) =>
+    new Promise<{ key: string; url: string; size: number }>((resolve, reject) => {
+      const x = new XMLHttpRequest()
+      x.open('PUT', `/api/properties/${id}/media?kind=${kind}&name=${encodeURIComponent(name)}`)
+      x.setRequestHeader('content-type', type)
+      x.upload.onprogress = (e) => { if (e.lengthComputable) onProgress?.(e.loaded / e.total) }
+      x.onload = () => {
+        let d: { error?: string; key?: string; url?: string; size?: number } = {}
+        try { d = JSON.parse(x.responseText || '{}') } catch { /* non-JSON error body */ }
+        if (x.status < 300 && d.url) resolve(d as { key: string; url: string; size: number })
+        else reject(new ApiError(x.status, d.error ?? `Upload failed (${x.status})`))
+      }
+      x.onerror = () => reject(new ApiError(0, 'Upload failed. Check your connection.'))
+      x.send(file)
+    }),
   guest: (slug: string) => call<{ config: PropertyConfig; updatedAt: number }>(`/g/${slug}`),
   guestAsk: (slug: string, question: string) => call<Answer>(`/g/${slug}/ask`, { json: { question } }),
 }
