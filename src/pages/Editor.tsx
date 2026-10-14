@@ -3,7 +3,7 @@ import { navigate } from '../App'
 import { ago, api, ApiError, wifiQr, type Device, type Property, type PropertyConfig, type Question, type TileKey } from '../api'
 import { Area, Field, ObjectList, StringList, Text, Toggle } from '../components/Fields'
 import { Qr } from '../components/Qr'
-import { TILE_LABELS, TvPreview } from '../components/Preview'
+import { TvPreview } from '../components/Preview'
 
 const TABS: [string, string][] = [
   ['welcome', 'Welcome'], ['stay', 'Stay & Wi-Fi'], ['rules', 'House rules'], ['guide', 'Guide'], ['faqs', 'FAQs'],
@@ -235,13 +235,10 @@ export function Editor({ id, tab }: { id: string; tab: string }) {
                     </select>
                   </Field>
                 </div>
-                <Field label="Background photo URL" hint="Optional. An https link to a wide photo of the place.">
-                  <Text value={c.appearance.backgroundUrl} maxLength={500} placeholder="https://…/loft.jpg" onChange={(v) => set('appearance', { ...c.appearance, backgroundUrl: v })} />
-                </Field>
                 <Field label="Tiles on the home screen">
                   <div className="stack" style={{ gap: 8 }}>
-                    {(Object.keys(TILE_LABELS) as TileKey[]).map((k) => (
-                      <Toggle key={k} on={c.appearance.tiles[k]} label={TILE_LABELS[k].title} onChange={(v) => set('appearance', { ...c.appearance, tiles: { ...c.appearance.tiles, [k]: v } })} />
+                    {c.design.tiles.map((t, i) => (
+                      <Toggle key={t.key} on={t.visible} label={t.label} onChange={(v) => set('design', { ...c.design, tiles: c.design.tiles.map((x, j) => (j === i ? { ...x, visible: v } : x)) })} />
                     ))}
                   </div>
                 </Field>

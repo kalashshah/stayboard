@@ -1,6 +1,6 @@
 // Thin D1 helpers. Every function takes env and returns plain rows.
 import { hashPassword, newId, newSecret, randomCode, slugFor } from './auth'
-import { defaultConfig, type PropertyConfig } from './config'
+import { defaultConfig, upgradeConfig, type PropertyConfig } from './config'
 
 export type Host = { id: string; email: string }
 export type PropertyRow = { id: string; host_id: string; slug: string; config: string; updated_at: number; created_at: number }
@@ -16,7 +16,7 @@ export type QuestionRow = {
 const SESSION_DAYS = 30
 
 export const toProperty = (r: PropertyRow): Property => ({
-  id: r.id, host_id: r.host_id, slug: r.slug, config: JSON.parse(r.config) as PropertyConfig, updated_at: r.updated_at,
+  id: r.id, host_id: r.host_id, slug: r.slug, config: upgradeConfig(JSON.parse(r.config)) as PropertyConfig, updated_at: r.updated_at,
 })
 
 // hosts + sessions

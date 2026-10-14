@@ -1,7 +1,7 @@
-import type { PropertyConfig, TileKey } from '../worker/config'
-export { headlineFor, wifiQr } from '../worker/config'
+import type { Design, Font, IconKey, PropertyConfig, Tile, TileKey } from '../worker/config'
+export { backdropFor, headlineFor, ICONS, layoutFor, RADIUS, tileSub, TILE_DEFAULTS, visibleTiles, wifiQr } from '../worker/config'
 
-export type { PropertyConfig, TileKey }
+export type { Design, Font, IconKey, PropertyConfig, Tile, TileKey }
 export type Host = { id: string; email: string }
 export type PropertySummary = { id: string; slug: string; name: string; updated_at: number; devices: number; unanswered: number }
 export type Property = { id: string; slug: string; config: PropertyConfig; updated_at: number }

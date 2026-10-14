@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, ApiError, headlineFor, wifiQr, type Answer, type PropertyConfig } from '../api'
+import { api, ApiError, headlineFor, wifiQr, type Answer, type PropertyConfig, type TileKey } from '../api'
 import { Qr } from '../components/Qr'
 
 export function Guest({ slug }: { slug: string }) {
@@ -12,7 +12,7 @@ export function Guest({ slug }: { slug: string }) {
 
   if (missing) return <main className="guest"><p className="muted" style={{ padding: 40, textAlign: 'center' }}>This guest page doesn't exist any more.</p></main>
   if (!c) return null
-  const t = c.appearance.tiles
+  const t = Object.fromEntries(c.design.tiles.map((x) => [x.key, x.visible])) as Record<TileKey, boolean>
   return (
     <main className="guest" style={{ ['--accent' as string]: c.appearance.accent }}>
       <header className="g-hero" style={{ background: `linear-gradient(160deg, ${c.appearance.accent}, ${c.appearance.accent}99)` }}>
