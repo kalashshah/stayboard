@@ -85,6 +85,17 @@ For a real Fire TV Stick running Vega OS: enable developer mode, `vega device in
 
 ## Screenshots (Vega Virtual Device and dashboard)
 
+Design studio on the TV: the same property in five layouts, with a looping video, a slideshow, a blurred photo and a flat colour behind it.
+
+| | |
+|---|---|
+| ![Poster layout, video backdrop, Fraunces](docs/media/tv-studio-poster.png) | ![Hero layout, slideshow, Inter](docs/media/tv-studio-hero.png) |
+| ![Split layout, video with media card](docs/media/tv-studio-split.png) | ![Centered layout, blurred photo, Space Grotesk](docs/media/tv-studio-centered.png) |
+| ![Minimal layout, light theme](docs/media/tv-studio-minimal.png) | ![Design studio in the dashboard](docs/media/web-studio.png) |
+| ![Tile sorter](docs/media/web-studio-tiles.png) | ![Properties with live thumbnails](docs/media/web-properties.png) |
+
+The rest of the app:
+
 | | |
 |---|---|
 | ![Pair](docs/media/tv-pair.png) | ![Home](docs/media/tv-home.png) |
