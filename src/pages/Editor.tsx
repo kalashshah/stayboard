@@ -260,7 +260,7 @@ export function Editor({ id, tab }: { id: string; tab: string }) {
               <TvPreview config={c} frame focus="ask" />
               <span className="muted small">Live preview · paired TVs pick up changes within a minute</span>
             </div>
-            <DesignTab id={id} c={c} set={set} />
+            <DesignTab id={id} c={c} update={update} />
           </div>
         ) : (
           <div className="editor-body">

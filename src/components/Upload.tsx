@@ -1,6 +1,7 @@
 // Drop zone + file picker for one media slot (video, audio or image), with progress and a "use a link" fallback.
 import { useRef, useState, type DragEvent } from 'react'
 import { api, ApiError, type MediaKind } from '../api'
+import { ownMediaFile } from '../design'
 import { capturePoster, inferType } from '../media'
 
 const ACCEPT: Record<MediaKind, string> = { video: 'video/mp4,.mp4', audio: 'audio/mpeg,audio/mp4,.mp3,.m4a', image: 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp' }
@@ -24,10 +25,18 @@ export function Upload({ id, kind, value, onChange, label, poster, compact }: Up
   const [over, setOver] = useState(false)
   const input = useRef<HTMLInputElement>(null)
 
+  /** Delete files this property uploaded (never links) once nothing references them. */
+  const forget = (...urls: (string | undefined)[]) => {
+    for (const u of urls) {
+      const f = u ? ownMediaFile(u, id) : null
+      if (f) api.deleteMedia(id, f).catch(() => {})
+    }
+  }
   const send = async (file: File) => {
     setError('')
     const type = inferType(file)
     if (!type) return setError(`Pick a file: ${RULE[kind]}.`)
+    const previous = [value, poster]
     setProgress(0)
     try {
       const r = await api.upload(id, kind, file, type, file.name, setProgress)
@@ -36,6 +45,7 @@ export function Upload({ id, kind, value, onChange, label, poster, compact }: Up
         const p = b ? await api.upload(id, 'image', b, 'image/jpeg', 'poster.jpg').catch(() => null) : null
         onChange(r.url, { poster: p?.url ?? '' })
       } else onChange(r.url)
+      forget(...previous) // the replacement landed; the old upload is an orphan now
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Upload failed')
     } finally {
@@ -68,8 +78,9 @@ export function Upload({ id, kind, value, onChange, label, poster, compact }: Up
           <span className="small media-name" title={value}>{name}</span>
           <div className="row" style={{ gap: 6 }}>
             <button type="button" className="btn ghost sm" onClick={() => input.current?.click()}>Replace</button>
-            <button type="button" className="btn danger sm" onClick={() => onChange('', { poster: '' })}>Remove</button>
+            <button type="button" className="btn danger sm" onClick={() => { onChange('', { poster: '' }); forget(value, poster) }}>Remove</button>
           </div>
+          {error && <p className="error small">{error}</p>}
         </div>
         <input ref={input} type="file" accept={ACCEPT[kind]} hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) send(f) }} />
       </div>

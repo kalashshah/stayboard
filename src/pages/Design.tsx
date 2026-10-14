@@ -1,11 +1,12 @@
 // The Design tab: backdrop media, music, layout, type, tiles and details. Every change goes through `set('design', …)`.
 import { useRef, useState } from 'react'
 import { ICONS, tileSub, TILE_DEFAULTS, type Design, type Font, type IconKey, type PropertyConfig, type Tile } from '../api'
+import { dropIndex, patchAppearance, patchBackdrop, patchDesign, patchMusic, resolveMove } from '../design'
 import { Field, Segmented, Slider, Text, Toggle } from '../components/Fields'
 import { FONT_STACK } from '../components/Preview'
 import { Upload } from '../components/Upload'
 
-type Props = { id: string; c: PropertyConfig; set: <K extends keyof PropertyConfig>(k: K, v: PropertyConfig[K]) => void }
+type Props = { id: string; c: PropertyConfig; update: (patch: (c: PropertyConfig) => PropertyConfig) => void }
 
 const LAYOUT_INFO: [Design['layout'], string, string][] = [
   ['hero', 'Hero', 'Headline bottom-left, tiles along the bottom.'],
@@ -16,10 +17,13 @@ const LAYOUT_INFO: [Design['layout'], string, string][] = [
 ]
 const FONT_INFO: [Font, string, string][] = [['sans', 'Inter', 'Clean and modern'], ['serif', 'Fraunces', 'Warm and editorial'], ['grotesk', 'Space Grotesk', 'Techy and friendly']]
 
-export function DesignTab({ id, c, set }: Props) {
+export function DesignTab({ id, c, update }: Props) {
   const d = c.design
-  const sd = (patch: Partial<Design>) => set('design', { ...d, ...patch })
-  const bd = (patch: Partial<Design['backdrop']>) => sd({ backdrop: { ...d.backdrop, ...patch } })
+  // Functional patches: an upload that finishes after the host changed the layout must not revert the layout.
+  const sd = (patch: Partial<Design>) => update(patchDesign(patch))
+  const bd = (patch: Partial<Design['backdrop']>) => update(patchBackdrop(patch))
+  const md = (patch: Partial<Design['music']>) => update(patchMusic(patch))
+  const ad = (patch: Partial<PropertyConfig['appearance']>) => update(patchAppearance(patch))
   const b = d.backdrop
   const hasMedia = b.kind !== 'color'
   return (
@@ -67,11 +71,11 @@ export function DesignTab({ id, c, set }: Props) {
 
       <section className="card stack">
         <Head title="Music" hint="A track that loops softly on the TV. Never plays on the phone page." />
-        <Toggle on={d.music.enabled} label="Play music on the TV" onChange={(enabled) => sd({ music: { ...d.music, enabled } })} />
+        <Toggle on={d.music.enabled} label="Play music on the TV" onChange={(enabled) => md({ enabled })} />
         {d.music.enabled && (
           <>
-            <Upload id={id} kind="audio" label="Track" value={d.music.url} onChange={(url) => sd({ music: { ...d.music, url } })} />
-            <Field label="Volume"><Slider value={d.music.volume} min={0} max={100} onChange={(volume) => sd({ music: { ...d.music, volume } })} suffix="%" /></Field>
+            <Upload id={id} kind="audio" label="Track" value={d.music.url} onChange={(url) => md({ url })} />
+            <Field label="Volume"><Slider value={d.music.volume} min={0} max={100} onChange={(volume) => md({ volume })} suffix="%" /></Field>
           </>
         )}
       </section>
@@ -116,11 +120,11 @@ export function DesignTab({ id, c, set }: Props) {
         <div className="cols">
           <Field label="Accent color">
             <div className="row">
-              <input type="color" className="swatch" value={c.appearance.accent} onChange={(e) => set('appearance', { ...c.appearance, accent: e.target.value })} />
-              <Text value={c.appearance.accent} maxLength={7} onChange={(v) => set('appearance', { ...c.appearance, accent: v })} />
+              <input type="color" className="swatch" value={c.appearance.accent} onChange={(e) => ad({ accent: e.target.value })} />
+              <Text value={c.appearance.accent} maxLength={7} onChange={(v) => ad({ accent: v })} />
             </div>
           </Field>
-          <Field label="Theme"><Segmented value={c.appearance.theme} options={[['dark', 'Dark'], ['light', 'Light']]} onChange={(theme) => set('appearance', { ...c.appearance, theme })} /></Field>
+          <Field label="Theme"><Segmented value={c.appearance.theme} options={[['dark', 'Dark'], ['light', 'Light']]} onChange={(theme) => ad({ theme })} /></Field>
           <Field label="Tile style"><Segmented value={d.tileStyle} options={[['glass', 'Glass'], ['solid', 'Solid'], ['outline', 'Outline']]} onChange={(tileStyle) => sd({ tileStyle })} /></Field>
           <Field label="Corners"><Segmented value={d.radius} options={[['sharp', 'Sharp'], ['rounded', 'Rounded'], ['pill', 'Pill']]} onChange={(radius) => sd({ radius })} /></Field>
         </div>
@@ -173,8 +177,7 @@ function TileSorter({ c, tiles, onChange }: { c: PropertyConfig; tiles: Tile[]; 
   const auto = { ...c, design: { ...c.design, tiles: c.design.tiles.map((x) => ({ ...x, sub: '' })) } }
   const indexAt = (y: number) => {
     const cards = Array.from(list.current?.children ?? []) as HTMLElement[]
-    const i = cards.findIndex((el) => { const r = el.getBoundingClientRect(); return y < r.top + r.height / 2 })
-    return i === -1 ? cards.length - 1 : i
+    return dropIndex(cards.map((el) => { const r = el.getBoundingClientRect(); return r.top + r.height / 2 }), y)
   }
   const grip = (i: number) => ({
     onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
@@ -193,7 +196,7 @@ function TileSorter({ c, tiles, onChange }: { c: PropertyConfig; tiles: Tile[]; 
       const d = dragRef.current
       dragRef.current = null
       setDrag(null)
-      if (d) move(d.from, d.to > d.from ? d.to - 1 : d.to) // `to` is an insertion point in the pre-move list
+      if (d) move(d.from, resolveMove(d.from, d.to, tiles.length))
     },
     onPointerCancel: () => { dragRef.current = null; setDrag(null) },
   })
