@@ -2,15 +2,18 @@ import { Hono } from 'hono'
 import { createMiddleware } from 'hono/factory'
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { ask, GUEST_DAILY_CAP, today, TV_DAILY_CAP, validQuestion } from './ask'
-import { verifyPassword } from './auth'
+import { newSecret, verifyPassword } from './auth'
 import { parseConfig } from './config'
 import {
   createDevice, createHost, createProperty, createSession, deleteProperty, deleteQuestion, deleteSession,
-  deviceBySecret, devicesFor, findHost, getProperty, getPropertyBySlug, hostForSession, listProperties,
+  deviceBySecret, devicesFor, findHost, getProperty, getPropertyBySlug, hostForEmail, hostForSession, listProperties,
   listQuestions, pairDevice, takeBudget, touchDevice, unpairDevice, unpairDeviceRow, updateConfig, type Host,
 } from './db'
+import { exchangeCode, googleAuthUrl } from './google'
 
 const COOKIE = 'sb_session'
+const OAUTH_COOKIE = 'sb_oauth'
+const OAUTH_PATH = '/api/auth/google'
 type Vars = { host: Host }
 
 export const api = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -39,6 +42,23 @@ api.post('/auth/login', async (c) => {
   if (!row || !password || !(await verifyPassword(password, row.pass_hash, row.salt))) return c.json({ error: 'Wrong email or password' }, 401)
   setSession(c, await createSession(c.env, row.id))
   return c.json({ host: { id: row.id, email: row.email } })
+})
+
+// Google sign-in. State lives in a short cookie scoped to these two routes; the callback redirects back into the app.
+api.get('/auth/google', (c) => {
+  const state = newSecret()
+  setCookie(c, OAUTH_COOKIE, state, { httpOnly: true, secure: true, sameSite: 'Lax', path: OAUTH_PATH, maxAge: 600 })
+  return c.redirect(googleAuthUrl(c.env.GOOGLE_CLIENT_ID, new URL(c.req.url).origin, state))
+})
+
+api.get('/auth/google/callback', async (c) => {
+  const { code, state } = c.req.query()
+  const expected = getCookie(c, OAUTH_COOKIE)
+  deleteCookie(c, OAUTH_COOKIE, { path: OAUTH_PATH })
+  const email = code && state && expected === state ? await exchangeCode(c.env, new URL(c.req.url).origin, code) : null
+  if (!email) return c.redirect('/?error=' + encodeURIComponent("Google sign-in didn't go through. Try again."))
+  setSession(c, await createSession(c.env, (await hostForEmail(c.env, email)).id))
+  return c.redirect('/app')
 })
 
 api.post('/auth/logout', async (c) => {

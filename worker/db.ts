@@ -33,6 +33,21 @@ export async function createHost(env: Env, email: string, password: string): Pro
   return { id, email }
 }
 
+/** Host for a Google-verified email; created without a password when new, so password login stays closed until one is set. */
+export async function hostForEmail(env: Env, email: string): Promise<Host> {
+  const select = env.DB.prepare('SELECT id, email FROM hosts WHERE email = ?1').bind(email)
+  const row = await select.first<Host>()
+  if (row) return row
+  const id = newId()
+  try {
+    await env.DB.prepare("INSERT INTO hosts (id, email, pass_hash, salt, created_at) VALUES (?1, ?2, '', '', ?3)").bind(id, email, Date.now()).run()
+    return { id, email }
+  } catch (e) {
+    if (!String(e).includes('UNIQUE')) throw e
+    return (await select.first<Host>())!
+  }
+}
+
 export const findHost = (env: Env, email: string) =>
   env.DB.prepare('SELECT id, email, pass_hash, salt FROM hosts WHERE email = ?1').bind(email)
     .first<{ id: string; email: string; pass_hash: string; salt: string }>()

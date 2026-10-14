@@ -43,6 +43,7 @@ npm install
 npx wrangler d1 create stayboard            # put the id in wrangler.jsonc
 npx wrangler d1 migrations apply stayboard --remote
 cp .dev.vars.example .dev.vars              # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (IAM user with bedrock:InvokeModel only)
+                                            # GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (OAuth web client; redirect URI <origin>/api/auth/google/callback)
 npx wrangler secret bulk .dev.vars
 npm run deploy                              # vite build + wrangler deploy
 npm test                                    # vitest: config schema, hashing, prompt, answer parsing
@@ -59,7 +60,7 @@ For a real Fire TV Stick running Vega OS: enable developer mode, `vega device in
 
 ## For judges (no Fire TV needed)
 
-1. Open https://stayboard.kalashshah47.workers.dev and create an account (any email, password of 8+ characters).
+1. Open https://stayboard.kalashshah47.workers.dev and create an account (Continue with Google, or any email and a password of 8+ characters).
 2. Create a property. It comes pre-filled with a sensible house guide; edit anything and watch the TV preview on the right update.
 3. Open **Guest page ↗** on your phone: that's exactly what the TV shows, plus the ask box. Ask "when is checkout?" then "is there a hair dryer?".
 4. Back in the editor, open **Inbox**: the hair-dryer question is waiting. Click **Add as FAQ**, type the answer. Ask again on the phone.

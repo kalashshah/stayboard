@@ -362,3 +362,8 @@ strong.code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; lette
   .l-ask { position: static; width: 100%; margin-top: 8px; }
   .list-row { grid-template-columns: 1fr auto auto auto; }
 }
+
+/* Google sign-in */
+.btn.google { display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; color: inherit; }
+.or { display: flex; align-items: center; gap: 12px; }
+.or::before, .or::after { content: ''; flex: 1; border-top: 1px solid var(--line); }
