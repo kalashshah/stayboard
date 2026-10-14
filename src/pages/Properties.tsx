@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { navigate } from '../App'
 import { ago, api, type PropertySummary } from '../api'
+import { TvPreview } from '../components/Preview'
 
 export function Properties() {
   const [list, setList] = useState<PropertySummary[] | null>(null)
@@ -36,7 +37,8 @@ export function Properties() {
         {list?.length === 0 && <p className="muted">No properties yet. Create one above and you'll be editing in a second.</p>}
         {list?.map((p) => (
           <a key={p.id} className="card prop" href={`/app/p/${p.id}`} onClick={(e) => { e.preventDefault(); navigate(`/app/p/${p.id}`) }}>
-            <div>
+            <div className="prop-thumb"><TvPreview config={p.config} /></div>
+            <div style={{ flex: 1 }}>
               <h3>{p.name}</h3>
               <span className="muted small">Edited {ago(p.updated_at)} · {p.devices} TV{p.devices === 1 ? '' : 's'} paired</span>
             </div>

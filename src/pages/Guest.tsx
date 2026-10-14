@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { api, ApiError, headlineFor, wifiQr, type Answer, type PropertyConfig, type TileKey } from '../api'
+import { api, ApiError, backdropFor, headlineFor, visibleTiles, wifiQr, type Answer, type PropertyConfig, type Tile } from '../api'
+import { FONT_STACK } from '../components/Preview'
 import { Qr } from '../components/Qr'
 
 export function Guest({ slug }: { slug: string }) {
@@ -12,21 +13,38 @@ export function Guest({ slug }: { slug: string }) {
 
   if (missing) return <main className="guest"><p className="muted" style={{ padding: 40, textAlign: 'center' }}>This guest page doesn't exist any more.</p></main>
   if (!c) return null
-  const t = Object.fromEntries(c.design.tiles.map((x) => [x.key, x.visible])) as Record<TileKey, boolean>
+  const accent = c.appearance.accent
+  const b = backdropFor(c)
+  const photo = b.kind === 'photo' ? b.url : b.kind === 'slideshow' ? b.urls[0] : b.kind === 'video' ? b.poster : ''
+  const tiles = visibleTiles(c)
+  const ask = tiles.find((t) => t.key === 'ask')
+  const hero = photo
+    ? `linear-gradient(180deg, rgba(0,0,0,0.3), rgba(0,0,0,0.72)), url(${photo}) center/cover`
+    : `linear-gradient(160deg, ${accent}, ${accent}99)`
   return (
-    <main className="guest" style={{ ['--accent' as string]: c.appearance.accent }}>
-      <header className="g-hero" style={{ background: `linear-gradient(160deg, ${c.appearance.accent}, ${c.appearance.accent}99)` }}>
-        <span className="g-name">{c.name}</span>
+    <main className="guest" style={{ ['--accent' as string]: accent, ['--font' as string]: FONT_STACK[c.design.font] }}>
+      <header className="g-hero" style={{ background: hero }}>
+        {c.design.logo ? <img className="g-logo" src={c.design.logo} alt={c.name} /> : <span className="g-name">{c.name}</span>}
         <h1>{headlineFor(c)}</h1>
         <p>{c.welcome.message}</p>
         <span className="g-host">Hosted by {c.hostName}</span>
       </header>
 
-      {t.ask && c.ask.enabled && <Ask slug={slug} c={c} />}
+      {ask && <Ask slug={slug} c={c} />}
+      {tiles.filter((t) => t.key !== 'ask').map((t) => <Section key={t.key} t={t} c={c} />)}
 
-      {t.wifi && c.wifi.ssid && (
+      <footer className="muted small" style={{ textAlign: 'center', padding: '24px 0 40px' }}>Stayboard · a Fire TV welcome screen</footer>
+    </main>
+  )
+}
+
+function Section({ t, c }: { t: Tile; c: PropertyConfig }) {
+  switch (t.key) {
+    case 'wifi':
+      if (!c.wifi.ssid) return null
+      return (
         <section className="card g-sec">
-          <h2>Wi-Fi</h2>
+          <h2>{t.label}</h2>
           <div className="row" style={{ alignItems: 'flex-start' }}>
             <div style={{ flex: 1 }}>
               <div className="g-kv"><span className="muted small">Network</span><strong>{c.wifi.ssid}</strong></div>
@@ -36,11 +54,11 @@ export function Guest({ slug }: { slug: string }) {
             <Qr text={wifiQr(c)} size={110} />
           </div>
         </section>
-      )}
-
-      {t.checkout && (
+      )
+    case 'checkout':
+      return (
         <section className="card g-sec">
-          <h2>Your stay</h2>
+          <h2>{t.label}</h2>
           <div className="g-kv"><span className="muted small">Check-in</span><strong>{c.stay.checkIn}</strong></div>
           <div className="g-kv"><span className="muted small">Checkout</span><strong>{c.stay.checkOut}</strong></div>
           {c.stay.checkoutSteps.length > 0 && (
@@ -50,36 +68,39 @@ export function Guest({ slug }: { slug: string }) {
             </>
           )}
         </section>
-      )}
-
-      {t.rules && c.rules.length > 0 && (
+      )
+    case 'rules':
+      if (!c.rules.length) return null
+      return (
         <section className="card g-sec">
-          <h2>House rules</h2>
+          <h2>{t.label}</h2>
           <ul className="g-list">{c.rules.map((r, i) => <li key={i}>{r}</li>)}</ul>
         </section>
-      )}
-
-      {t.guide && (c.guide.length > 0 || c.faqs.length > 0) && (
+      )
+    case 'guide':
+      if (!c.guide.length && !c.faqs.length) return null
+      return (
         <section className="card g-sec">
-          <h2>House guide</h2>
+          <h2>{t.label}</h2>
           {c.guide.map((g, i) => (
             <details key={i} className="g-topic">
               <summary>{g.title}</summary>
               <p>{g.body}</p>
             </details>
           ))}
-          {c.faqs.length > 0 && c.faqs.map((f, i) => (
+          {c.faqs.map((f, i) => (
             <details key={`f${i}`} className="g-topic">
               <summary>{f.q}</summary>
               <p>{f.a}</p>
             </details>
           ))}
         </section>
-      )}
-
-      {t.places && c.places.length > 0 && (
+      )
+    case 'places':
+      if (!c.places.length) return null
+      return (
         <section className="card g-sec">
-          <h2>Local picks</h2>
+          <h2>{t.label}</h2>
           {c.places.map((p, i) => (
             <div key={i} className="g-place">
               <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -90,20 +111,20 @@ export function Guest({ slug }: { slug: string }) {
             </div>
           ))}
         </section>
-      )}
-
-      {t.contacts && c.contacts.length > 0 && (
+      )
+    case 'contacts':
+      if (!c.contacts.length) return null
+      return (
         <section className="card g-sec">
-          <h2>Contacts</h2>
+          <h2>{t.label}</h2>
           {c.contacts.map((k, i) => (
             <div className="g-kv" key={i}><span className="muted small">{k.label}</span><strong>{k.value}</strong></div>
           ))}
         </section>
-      )}
-
-      <footer className="muted small" style={{ textAlign: 'center', padding: '24px 0 40px' }}>Stayboard · a Fire TV welcome screen</footer>
-    </main>
-  )
+      )
+    default:
+      return null
+  }
 }
 
 function CopyButton({ text }: { text: string }) {

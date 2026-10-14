@@ -76,10 +76,10 @@ export async function listProperties(env: Env, hostId: string) {
        (SELECT COUNT(*) FROM questions q WHERE q.property_id = p.id AND q.answered = 0) AS unanswered
      FROM properties p WHERE p.host_id = ?1 ORDER BY p.created_at ASC`,
   ).bind(hostId).all<{ id: string; slug: string; config: string; updated_at: number; devices: number; unanswered: number }>()
-  return results.map((r) => ({
-    id: r.id, slug: r.slug, name: (JSON.parse(r.config) as PropertyConfig).name,
-    updated_at: r.updated_at, devices: r.devices, unanswered: r.unanswered,
-  }))
+  return results.map((r) => {
+    const config = upgradeConfig(JSON.parse(r.config)) as PropertyConfig
+    return { id: r.id, slug: r.slug, name: config.name, config, updated_at: r.updated_at, devices: r.devices, unanswered: r.unanswered }
+  })
 }
 
 export async function createProperty(env: Env, hostId: string, name: string): Promise<Property> {
