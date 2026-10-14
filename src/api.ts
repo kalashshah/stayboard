@@ -1,5 +1,5 @@
 import type { Design, Font, IconKey, PropertyConfig, Tile, TileKey } from '../worker/config'
-export { backdropFor, headlineFor, ICONS, layoutFor, RADIUS, tileSub, TILE_DEFAULTS, visibleTiles, wifiQr } from '../worker/config'
+export { backdropFor, headlineFor, ICONS, layoutFor, RADIUS, tileLabel, tileSub, TILE_DEFAULTS, visibleTiles, wifiQr } from '../worker/config'
 
 export type { Design, Font, IconKey, PropertyConfig, Tile, TileKey }
 export type Host = { id: string; email: string }

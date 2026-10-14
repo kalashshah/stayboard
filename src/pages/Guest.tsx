@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, ApiError, backdropFor, headlineFor, visibleTiles, wifiQr, type Answer, type PropertyConfig, type Tile } from '../api'
+import { api, ApiError, backdropFor, headlineFor, tileLabel, visibleTiles, wifiQr, type Answer, type PropertyConfig, type Tile } from '../api'
 import { FONT_STACK } from '../components/Preview'
 import { Qr } from '../components/Qr'
 
@@ -44,7 +44,7 @@ function Section({ t, c }: { t: Tile; c: PropertyConfig }) {
       if (!c.wifi.ssid) return null
       return (
         <section className="card g-sec">
-          <h2>{t.label}</h2>
+          <h2>{tileLabel(t)}</h2>
           <div className="row" style={{ alignItems: 'flex-start' }}>
             <div style={{ flex: 1 }}>
               <div className="g-kv"><span className="muted small">Network</span><strong>{c.wifi.ssid}</strong></div>
@@ -58,7 +58,7 @@ function Section({ t, c }: { t: Tile; c: PropertyConfig }) {
     case 'checkout':
       return (
         <section className="card g-sec">
-          <h2>{t.label}</h2>
+          <h2>{tileLabel(t)}</h2>
           <div className="g-kv"><span className="muted small">Check-in</span><strong>{c.stay.checkIn}</strong></div>
           <div className="g-kv"><span className="muted small">Checkout</span><strong>{c.stay.checkOut}</strong></div>
           {c.stay.checkoutSteps.length > 0 && (
@@ -73,7 +73,7 @@ function Section({ t, c }: { t: Tile; c: PropertyConfig }) {
       if (!c.rules.length) return null
       return (
         <section className="card g-sec">
-          <h2>{t.label}</h2>
+          <h2>{tileLabel(t)}</h2>
           <ul className="g-list">{c.rules.map((r, i) => <li key={i}>{r}</li>)}</ul>
         </section>
       )
@@ -81,7 +81,7 @@ function Section({ t, c }: { t: Tile; c: PropertyConfig }) {
       if (!c.guide.length && !c.faqs.length) return null
       return (
         <section className="card g-sec">
-          <h2>{t.label}</h2>
+          <h2>{tileLabel(t)}</h2>
           {c.guide.map((g, i) => (
             <details key={i} className="g-topic">
               <summary>{g.title}</summary>
@@ -100,7 +100,7 @@ function Section({ t, c }: { t: Tile; c: PropertyConfig }) {
       if (!c.places.length) return null
       return (
         <section className="card g-sec">
-          <h2>{t.label}</h2>
+          <h2>{tileLabel(t)}</h2>
           {c.places.map((p, i) => (
             <div key={i} className="g-place">
               <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -116,7 +116,7 @@ function Section({ t, c }: { t: Tile; c: PropertyConfig }) {
       if (!c.contacts.length) return null
       return (
         <section className="card g-sec">
-          <h2>{t.label}</h2>
+          <h2>{tileLabel(t)}</h2>
           {c.contacts.map((k, i) => (
             <div className="g-kv" key={i}><span className="muted small">{k.label}</span><strong>{k.value}</strong></div>
           ))}

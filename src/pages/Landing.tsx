@@ -1,15 +1,23 @@
 import { useEffect, useState } from 'react'
 import { defaultConfig } from '../../worker/config'
-import { api, ApiError, type Host } from '../api'
+import { api, ApiError, type Host, type PropertyConfig } from '../api'
 import { TvPreview } from '../components/Preview'
 
-const demo = (() => {
+const PHOTO = 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1600&q=70'
+
+function demo(layout: PropertyConfig['design']['layout'], font: PropertyConfig['design']['font'] = 'serif') {
   const c = defaultConfig('Ocean View Loft')
   c.hostName = 'Priya'
   c.welcome.guestName = 'Sam'
   c.wifi = { ssid: 'LoftNet', password: 'seabreeze22' }
+  c.design.layout = layout
+  c.design.font = font
+  c.design.radius = layout === 'minimal' ? 'sharp' : 'pill'
+  c.design.backdrop = { ...c.design.backdrop, kind: 'photo', photos: [PHOTO], overlay: layout === 'split' ? 70 : 50 }
+  c.design.tiles = [c.design.tiles[6], ...c.design.tiles.slice(0, 6)]
   return c
-})()
+}
+const hero = demo('poster')
 
 export function Landing({ onSignedIn }: { onSignedIn: (h: Host) => void }) {
   // /?error=... comes back from the Google callback; open the sign-in modal with it and clean the URL.
@@ -42,7 +50,7 @@ export function Landing({ onSignedIn }: { onSignedIn: (h: Host) => void }) {
           <span className="muted small">Free and open source. No subscription, no app for guests to install.</span>
         </div>
         <div className="l-demo">
-          <TvPreview config={demo} focus="ask" />
+          <TvPreview config={hero} focus="ask" frame />
           <div className="l-ask card">
             <span className="chip accent">Guest asked the TV</span>
             <p className="l-q">"How do I turn on the hot tub?"</p>
@@ -62,10 +70,23 @@ export function Landing({ onSignedIn }: { onSignedIn: (h: Host) => void }) {
       </section>
 
       <section className="l-section">
+        <h2 className="l-h2">Design it your way.</h2>
+        <p className="lede" style={{ marginTop: -16, marginBottom: 24 }}>Five layouts, three typefaces, your photos, a looping video, even music. Drag the tiles into the order you like. The TV, the preview and the guest page all show the same design.</p>
+        <div className="l-designs">
+          {([['hero', 'sans', 'Hero · Inter'], ['split', 'grotesk', 'Split · Space Grotesk'], ['minimal', 'serif', 'Minimal · Fraunces']] as const).map(([l, f, cap]) => (
+            <figure key={l} className="l-design">
+              <TvPreview config={demo(l, f)} focus="ask" />
+              <figcaption className="muted small">{cap}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      <section className="l-section">
         <h2 className="l-h2">Extremely configurable, deliberately simple.</h2>
         <div className="l-grid">
           <Point t="Every section is yours" d="Headline with the guest's name, message, check-in and checkout, Wi-Fi with a scannable code, rules, guide, FAQs, local picks, contacts." />
-          <Point t="Looks like your place" d="Accent color, light or dark, your own background photo, and switch any tile off." />
+          <Point t="Looks like your place" d="Video, photo or slideshow backdrops, music, layouts, fonts, colours, your logo, and tiles you can rename, reorder or hide." />
           <Point t="Grounded answers" d="Amazon Nova reads only your house guide. If it isn't in there, the TV says so and points guests to you." />
           <Point t="Private by design" d="No guest accounts, no tracking. The TV holds your house guide and a pairing secret, nothing about your guests." />
         </div>

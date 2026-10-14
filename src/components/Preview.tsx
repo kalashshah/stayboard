@@ -1,6 +1,6 @@
 // Web rendering of the TV home screen. Same layout engine as the TV (layoutFor/backdropFor); sizes in cqw so it scales with its box.
 import { useEffect, useState, type CSSProperties } from 'react'
-import { backdropFor, headlineFor, ICONS, layoutFor, RADIUS, tileSub, visibleTiles, type Font, type PropertyConfig, type TileKey } from '../api'
+import { backdropFor, headlineFor, ICONS, layoutFor, RADIUS, tileLabel, tileSub, visibleTiles, type Font, type PropertyConfig, type TileKey } from '../api'
 
 export const FONT_STACK: Record<Font, string> = {
   sans: "'Inter', system-ui, sans-serif",
@@ -48,7 +48,7 @@ export function TvPreview({ config: c, focus, time = '7:42 PM', frame = false }:
             <div className={`tv-tile ${on ? 'on' : ''}`} key={t.key} style={on ? { background: accent, color: '#fff', borderColor: 'transparent' } : undefined}>
               <span className="tv-glyph">{ICONS[t.icon]}</span>
               <span className="tv-tile-text">
-                <span className="tv-tile-t">{t.label}</span>
+                <span className="tv-tile-t">{tileLabel(t)}</span>
                 <span className="tv-tile-s" style={{ color: on ? 'rgba(255,255,255,0.8)' : sub }}>{tileSub(c, t.key)}</span>
               </span>
             </div>

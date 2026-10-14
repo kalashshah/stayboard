@@ -178,6 +178,8 @@ export function tileSub(c: PropertyConfig, key: TileKey): string {
 }
 
 export const visibleTiles = (c: PropertyConfig): Tile[] => c.design.tiles.filter((t) => t.visible && (t.key !== 'ask' || c.ask.enabled))
+/** A tile with its label cleared shows the stock label rather than nothing. */
+export const tileLabel = (t: Tile) => t.label || TILE_DEFAULTS[t.key].label
 
 export function defaultConfig(name: string): PropertyConfig {
   return {

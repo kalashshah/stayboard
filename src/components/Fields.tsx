@@ -29,6 +29,26 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
   )
 }
 
+/** Pill group with one option selected. */
+export function Segmented<T extends string>({ value, options, onChange }: { value: T; options: [T, string][]; onChange: (v: T) => void }) {
+  return (
+    <div className="seg" role="radiogroup">
+      {options.map(([v, label]) => (
+        <button key={v} type="button" role="radio" aria-checked={v === value} className={v === value ? 'on' : ''} onClick={() => onChange(v)}>{label}</button>
+      ))}
+    </div>
+  )
+}
+
+export function Slider({ value, min, max, step = 1, onChange, suffix = '' }: { value: number; min: number; max: number; step?: number; onChange: (v: number) => void; suffix?: string }) {
+  return (
+    <div className="slider">
+      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} />
+      <span className="small muted" style={{ minWidth: 44, textAlign: 'right' }}>{value}{suffix}</span>
+    </div>
+  )
+}
+
 /** Editable list of strings: one input per row. */
 export function StringList({ items, onChange, placeholder, addLabel = 'Add' }: { items: string[]; onChange: (v: string[]) => void; placeholder?: string; addLabel?: string }) {
   const set = (i: number, v: string) => onChange(items.map((x, j) => (j === i ? v : x)))

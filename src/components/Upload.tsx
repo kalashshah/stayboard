@@ -57,7 +57,7 @@ export function Upload({ id, kind, value, onChange, label, poster, compact }: Up
   }
 
   if (value && progress === null) {
-    const name = decodeURIComponent(value.split('/').pop() ?? '')
+    const name = value.includes('/m/') ? `Uploaded ${kind}` : (() => { try { return new URL(value).hostname } catch { return value } })()
     return (
       <div className={`media-slot ${compact ? 'compact' : ''}`}>
         {kind === 'image' && <img src={value} alt="" />}

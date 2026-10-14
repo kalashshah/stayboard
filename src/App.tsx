@@ -48,7 +48,7 @@ export function App() {
   const page = m ? <Editor id={m[1]} tab={params.get('tab') ?? 'welcome'} /> : path === '/pair' ? <Pair code={params.get('code') ?? ''} /> : <Properties />
 
   return (
-    <div className="shell">
+    <div className={`shell ${m ? 'wide' : ''}`}>
       <header className="top">
         <a className="brand" href="/app" onClick={(e) => { e.preventDefault(); navigate('/app') }}>
           <span className="brand-dot" /> Stayboard
