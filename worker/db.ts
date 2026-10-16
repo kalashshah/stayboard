@@ -12,6 +12,7 @@ export type DeviceRow = {
 }
 export type QuestionRow = {
   id: string; property_id: string; source: string; question: string; answer: string; answered: number; created_at: number
+  reply: string | null; replied_at: number | null
 }
 
 const SESSION_DAYS = 30
@@ -34,19 +35,19 @@ export async function createHost(env: Env, email: string, password: string): Pro
   return { id, email }
 }
 
-/** Host for a Google-verified email; created without a password when new, so password login stays closed until one is set. */
+/** Host for a Google-verified email. New emails get a password-less row (password login stays closed until one is set). An existing
+ *  password account belongs to whoever Google just verified: email signup never checked the address, so a password set before that
+ *  verification (and any session using it) is retired rather than left as a second key to the account. */
 export async function hostForEmail(env: Env, email: string): Promise<Host> {
-  const select = env.DB.prepare('SELECT id, email FROM hosts WHERE email = ?1').bind(email)
-  const row = await select.first<Host>()
-  if (row) return row
-  const id = newId()
-  try {
-    await env.DB.prepare("INSERT INTO hosts (id, email, pass_hash, salt, created_at) VALUES (?1, ?2, '', '', ?3)").bind(id, email, Date.now()).run()
-    return { id, email }
-  } catch (e) {
-    if (!String(e).includes('UNIQUE')) throw e
-    return (await select.first<Host>())!
+  await env.DB.prepare("INSERT OR IGNORE INTO hosts (id, email, pass_hash, salt, created_at) VALUES (?1, ?2, '', '', ?3)").bind(newId(), email, Date.now()).run()
+  const row = (await env.DB.prepare('SELECT id, email, pass_hash FROM hosts WHERE email = ?1').bind(email).first<Host & { pass_hash: string }>())!
+  if (row.pass_hash) {
+    await env.DB.batch([
+      env.DB.prepare("UPDATE hosts SET pass_hash = '', salt = '' WHERE id = ?1").bind(row.id),
+      env.DB.prepare('DELETE FROM sessions WHERE host_id = ?1').bind(row.id),
+    ])
   }
+  return { id: row.id, email: row.email }
 }
 
 export const findHost = (env: Env, email: string) =>
@@ -55,8 +56,11 @@ export const findHost = (env: Env, email: string) =>
 
 export async function createSession(env: Env, hostId: string) {
   const id = newSecret()
-  await env.DB.prepare('INSERT INTO sessions (id, host_id, expires_at) VALUES (?1, ?2, ?3)')
-    .bind(id, hostId, Date.now() + SESSION_DAYS * 86_400_000).run()
+  const now = Date.now()
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM sessions WHERE expires_at < ?1').bind(now), // expired rows are swept on the next sign-in
+    env.DB.prepare('INSERT INTO sessions (id, host_id, expires_at) VALUES (?1, ?2, ?3)').bind(id, hostId, now + SESSION_DAYS * 86_400_000),
+  ])
   return id
 }
 
@@ -121,6 +125,8 @@ export async function deleteProperty(env: Env, id: string) {
 
 // devices
 export async function createDevice(env: Env) {
+  // /tv/register is open to anyone and TVs that never pair would pile up: an unpaired row silent for a day (they poll every 5 s) goes.
+  await env.DB.prepare('DELETE FROM devices WHERE property_id IS NULL AND COALESCE(last_seen_at, created_at) < ?1').bind(Date.now() - 86_400_000).run()
   const secret = newSecret()
   for (let attempt = 0; attempt < 5; attempt++) {
     const code = randomCode(6)
@@ -180,15 +186,40 @@ export async function listQuestions(env: Env, propertyId: string) {
   return results
 }
 
+/** The host answers a question themselves; it then counts as answered. */
+export const replyQuestion = (env: Env, id: string, propertyId: string, reply: string) =>
+  env.DB.prepare('UPDATE questions SET reply = ?1, replied_at = ?2, answered = 1 WHERE id = ?3 AND property_id = ?4')
+    .bind(reply, Date.now(), id, propertyId).run()
+
+/** Host replies to the given questions (ids the asking phone kept); unknown or unreplied ids are skipped. */
+export async function repliesFor(env: Env, propertyId: string, ids: string[]) {
+  if (!ids.length) return []
+  const { results } = await env.DB.prepare(
+    `SELECT id, reply, replied_at FROM questions WHERE property_id = ?1 AND reply IS NOT NULL AND id IN (${ids.map((_, i) => `?${i + 2}`).join(',')})`,
+  ).bind(propertyId, ...ids).all<{ id: string; reply: string; replied_at: number }>()
+  return results
+}
+
+/** Replies to questions asked on the TV in the last day, newest first; the TV shows them on its Ask screen. */
+export async function recentTvReplies(env: Env, propertyId: string) {
+  const { results } = await env.DB.prepare(
+    "SELECT id, question, reply, replied_at FROM questions WHERE property_id = ?1 AND source = 'tv' AND reply IS NOT NULL AND replied_at > ?2 ORDER BY replied_at DESC LIMIT 5",
+  ).bind(propertyId, Date.now() - 86_400_000).all<{ id: string; question: string; reply: string; replied_at: number }>()
+  return results
+}
+
 export const deleteQuestion = (env: Env, id: string, propertyId: string) =>
   env.DB.prepare('DELETE FROM questions WHERE id = ?1 AND property_id = ?2').bind(id, propertyId).run()
 
-/** Atomic counter with a cap; key is e.g. "2026-10-14" or "2026-10-14:slug". */
+/** Atomic counter with a cap; key is e.g. "2026-10-14" or "2026-10-14:slug". Keys start with the ISO date, so older days are swept on the way. */
 export async function takeBudget(env: Env, key: string, cap: number): Promise<boolean> {
-  const row = await env.DB.prepare(
-    `INSERT INTO usage (day, calls) VALUES (?1, 1)
-     ON CONFLICT(day) DO UPDATE SET calls = calls + 1 WHERE calls < ?2
-     RETURNING calls`,
-  ).bind(key, cap).first()
-  return row !== null
+  const [, r] = await env.DB.batch([
+    env.DB.prepare('DELETE FROM usage WHERE day < ?1').bind(key.slice(0, 10)),
+    env.DB.prepare(
+      `INSERT INTO usage (day, calls) VALUES (?1, 1)
+       ON CONFLICT(day) DO UPDATE SET calls = calls + 1 WHERE calls < ?2
+       RETURNING calls`,
+    ).bind(key, cap),
+  ])
+  return r.results.length > 0
 }

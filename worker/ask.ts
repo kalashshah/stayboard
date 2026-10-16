@@ -1,14 +1,13 @@
 // "Ask the house": answer a guest question from the property config via Bedrock Nova 2 Lite.
 import { AwsClient } from 'aws4fetch'
-import type { PropertyConfig } from './config'
+import type { Answer, PropertyConfig } from '../shared/design'
 import { insertQuestion, takeBudget, type Property } from './db'
 
 export const GLOBAL_DAILY_CAP = 300
+export const MAIL_DAILY_CAP = 10
 export const GUEST_DAILY_CAP = 60
 export const TV_DAILY_CAP = 200
 const MAX_QUESTION = 300
-
-export type Answer = { answered: boolean; answer: string }
 
 export function validQuestion(q: unknown): string | null {
   if (typeof q !== 'string') return null
@@ -97,6 +96,29 @@ export async function ask(env: Env, property: Property, question: string, source
       result = fallback("I couldn't reach the concierge just now.")
     }
   }
-  await insertQuestion(env, { property_id: property.id, source, question, answer: result.answer, answered: result.answered ? 1 : 0 })
-  return result
+  const id = await insertQuestion(env, { property_id: property.id, source, question, answer: result.answer, answered: result.answered ? 1 : 0, reply: null, replied_at: null })
+  if (!result.answered && c.ask.enabled) await notifyHost(env, property, question, id)
+  return { ...result, id }
+}
+
+const esc = (s: string) => s.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`)
+
+/** Email the host about a question the guide couldn't answer. Capped per property per day so a guest can't flood the inbox; never throws. */
+export async function notifyHost(env: Env, property: Property, question: string, qid: string) {
+  try {
+    if (!(await takeBudget(env, `${today()}:mail:${property.id}`, MAIL_DAILY_CAP))) return
+    const host = await env.DB.prepare('SELECT email FROM hosts WHERE id = ?1').bind(property.host_id).first<{ email: string }>()
+    if (!host) return
+    const name = property.config.name
+    const link = `${env.APP_URL}/app/p/${property.id}?tab=inbox&q=${qid}`
+    await env.EMAIL.send({
+      to: host.email,
+      from: { email: 'stayboard@mail.keronlabs.com', name: 'Stayboard' },
+      subject: `New question at ${name}`,
+      text: `A guest at ${name} asked something that isn't in your house guide:\n\n"${question}"\n\nReply and the guest sees your answer on the TV or their phone. It's also saved as an FAQ for every guest after: ${link}`,
+      html: `<p>A guest at <b>${esc(name)}</b> asked something that isn't in your house guide:</p><blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #fa7319;background:#fff7f2">${esc(question)}</blockquote><p>Reply and the guest sees your answer on the TV or their phone. It's also saved as an FAQ for every guest after.</p><p><a href="${link}" style="display:inline-block;padding:10px 16px;border-radius:10px;background:#fa7319;color:#fff;text-decoration:none">Reply in Stayboard</a></p>`,
+    })
+  } catch (e) {
+    console.error('notify failed', String(e))
+  }
 }

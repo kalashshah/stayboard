@@ -9,4 +9,8 @@ tv/node_modules/
 tv/build/
 tv/dist/
 tv/buildinfo.json
+tv/generated/
 .DS_Store
+.next/
+.open-next/
+next-env.d.ts

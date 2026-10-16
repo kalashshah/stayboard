@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { defaultConfig } from '../worker/config'
-import { dropIndex, ownMediaFile, patchBackdrop, patchDesign, resolveMove } from './design'
+import { backdropFor, defaultConfig } from '../shared/design'
+import { dropIndex, ownMediaFile, patchBackdrop, patchDesign, resolveMove, stillConfig } from './design'
 
 describe('design patches apply to the latest config, not the one captured at click time', () => {
   it('a backdrop patch created before a layout change keeps the new layout', () => {
@@ -42,5 +42,20 @@ describe('ownMediaFile', () => {
     expect(ownMediaFile('https://cdn.example/x.mp4', 'p1', origin)).toBeNull()
     expect(ownMediaFile(`${origin}/m/p2/abc.mp4`, 'p1', origin)).toBeNull()
     expect(ownMediaFile('', 'p1', origin)).toBeNull()
+  })
+})
+
+describe('stillConfig', () => {
+  const c = defaultConfig('Loft')
+  it('freezes video to its poster and a slideshow to its first photo', () => {
+    const video = patchBackdrop({ kind: 'video', video: 'https://x/v.mp4', poster: 'https://x/p.jpg' })(c)
+    expect(backdropFor(stillConfig(video))).toEqual({ kind: 'photo', url: 'https://x/p.jpg' })
+    const show = patchBackdrop({ kind: 'slideshow', photos: ['https://x/1.jpg', 'https://x/2.jpg'] })(c)
+    expect(backdropFor(stillConfig(show))).toEqual({ kind: 'photo', url: 'https://x/1.jpg' })
+  })
+  it('leaves colour and photo alone, even with stale photos stored', () => {
+    const color = patchBackdrop({ kind: 'color', photos: ['https://x/1.jpg'] })(c)
+    expect(backdropFor(stillConfig(color))).toEqual({ kind: 'color' })
+    expect(stillConfig(c)).toBe(c)
   })
 })

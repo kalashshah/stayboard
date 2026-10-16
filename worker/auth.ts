@@ -1,4 +1,5 @@
 // Password hashing (PBKDF2-SHA256 via Web Crypto) and random identifiers.
+import { timingSafeEqual } from 'node:crypto'
 
 export const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const ITERATIONS = 100_000
@@ -22,11 +23,9 @@ export async function hashPassword(password: string) {
 }
 
 export async function verifyPassword(password: string, hash: string, salt: string) {
-  const got = await pbkdf2(password, salt)
-  if (got.length !== hash.length) return false
-  let diff = 0
-  for (let i = 0; i < got.length; i++) diff |= got.charCodeAt(i) ^ hash.charCodeAt(i)
-  return diff === 0
+  const enc = (s: string) => new TextEncoder().encode(s)
+  const got = enc(await pbkdf2(password, salt))
+  return got.length === hash.length && timingSafeEqual(got, enc(hash))
 }
 
 export function randomCode(n: number) {

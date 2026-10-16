@@ -1,7 +1,7 @@
 import AsyncStorage from '@amazon-devices/react-native-async-storage__async-storage'
-import { upgradeConfig, type Answer, type PropertyConfig, type TvState } from './types'
+import { upgradeConfig, type Answer, type TvState } from './types'
 
-export const API_BASE = 'https://stayboard.kalashshah47.workers.dev'
+export const API_BASE = 'https://stayboard.keronlabs.com'
 
 const KEY_SECRET = 'stayboard.secret'
 const KEY_STATE = 'stayboard.state'
@@ -47,5 +47,3 @@ export async function loadCachedState(): Promise<TvState | null> {
 }
 export const saveCachedState = (s: TvState) => AsyncStorage.setItem(KEY_STATE, JSON.stringify(s)).catch(() => {})
 export const clearCachedState = () => AsyncStorage.removeItem(KEY_STATE).catch(() => {})
-
-export const isConfig = (s: TvState | null): s is Extract<TvState, { paired: true }> & { config: PropertyConfig } => !!s && s.paired

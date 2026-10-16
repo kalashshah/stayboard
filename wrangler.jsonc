@@ -1,16 +1,15 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "stayboard",
-  "main": "worker/index.ts",
+  "main": ".open-next/worker.js",
   "compatibility_date": "2026-10-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "assets": {
-    "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/m/*"]
-  },
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "binding": "ASSETS", "directory": ".open-next/assets" },
   "d1_databases": [{ "binding": "DB", "database_name": "stayboard", "database_id": "9ad0ba95-d527-4040-b7df-9b69b3edc8f5", "migrations_dir": "migrations" }],
   "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "stayboard-media" }],
-  "vars": { "AWS_REGION": "us-east-1", "MODEL_ID": "us.amazon.nova-2-lite-v1:0", "APP_URL": "https://stayboard.kalashshah47.workers.dev" },
+  "vars": { "AWS_REGION": "us-east-1", "MODEL_ID": "us.amazon.nova-2-lite-v1:0", "APP_URL": "https://stayboard.keronlabs.com" },
+  "send_email": [{ "name": "EMAIL" }],
+  "workers_dev": true, // kept on: installed TV builds and saved media URLs still point at stayboard.kalashshah47.workers.dev
+  "routes": [{ "pattern": "stayboard.keronlabs.com", "custom_domain": true }],
   "observability": { "enabled": true }
 }

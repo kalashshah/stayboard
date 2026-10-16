@@ -6,7 +6,7 @@ Stayboard is a Fire TV app built on **Vega OS** for short-term rentals. The host
 
 Built for the Amazon "Build, Ship, Shape" Developer Hackathon 2026, Fire TV track (also the AWS Builder and Open Source mini-challenges).
 
-- Live dashboard: https://stayboard.kalashshah47.workers.dev
+- Live dashboard: https://stayboard.keronlabs.com
 - Friction log: [docs/friction-log.md](docs/friction-log.md)
 - Design spec: [docs/superpowers/specs/2026-10-14-stayboard-design.md](docs/superpowers/specs/2026-10-14-stayboard-design.md)
 
@@ -19,13 +19,13 @@ Welcome-screen apps already exist on Fire TV (Hello Guest Screen, WelcomeScreen,
 | Part | Where | Stack |
 |---|---|---|
 | Fire TV app | `tv/` | React Native 0.83 for Vega (`@amazon-devices/react-native-kepler` 4), `react-native-w3cmedia` for video and audio, QR codes, AsyncStorage, bundled fonts |
-| API + database + media | `worker/`, `migrations/` | Cloudflare Worker (Hono), D1 (SQLite), R2 for host uploads (ranged, immutable), Amazon Bedrock Nova 2 Lite via `aws4fetch` |
-| Host dashboard | `src/` | React 19 + Vite, design studio with a live framed preview of the TV, drag-to-reorder tiles, uploads with progress, autosave |
-| Guest phone page | `src/pages/Guest.tsx` | Same SPA at `/g/<slug>`, reached from a QR code on the TV; same backdrop, font and tile order as the TV |
+| API + database + media | `src/app/api/`, `worker/`, `migrations/` | Next.js route handlers on a Cloudflare Worker via OpenNext; D1/R2 logic in `worker/`. D1 (SQLite), R2 for host uploads (ranged, immutable), Amazon Bedrock Nova 2 Lite via `aws4fetch` |
+| Host dashboard | `src/app/` | Next.js 16 (App Router) + Tailwind 4 with AlignUI components; design studio with a live framed preview of the TV, drag-to-reorder tiles, uploads with progress, autosave |
+| Guest phone page | `src/app/g/[slug]/` | Server-rendered at `/g/<slug>`, reached from a QR code on the TV; same backdrop, font and tile order as the TV |
 
 ### Design studio
 
-One `design` object in the property config drives three renderers (TV, web preview, guest page) through the same pure helpers (`layoutFor`, `backdropFor`, `tileSub` in `worker/config.ts`, mirrored in `tv/src/types.ts`):
+One `design` object in the property config drives three renderers (TV, web preview, guest page) through the same pure helpers (`layoutFor`, `backdropFor`, `tileSub` in `shared/design.ts`, imported by all three):
 
 | Control | Options |
 |---|---|
@@ -61,7 +61,7 @@ npx wrangler r2 bucket create stayboard-media   # host uploads (free tier is ple
 cp .dev.vars.example .dev.vars              # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (IAM user with bedrock:InvokeModel only)
                                             # GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (OAuth web client; redirect URI <origin>/api/auth/google/callback)
 npx wrangler secret bulk .dev.vars
-npm run deploy                              # vite build + wrangler deploy
+npm run deploy                              # opennextjs-cloudflare build + deploy
 npm test                                    # vitest: config schema, hashing, prompt, answer parsing
 
 # TV app (Vega SDK installed: curl -fsSL https://sdk-installer.vega.labcollab.net/get_vvm.sh | bash)
@@ -76,7 +76,7 @@ For a real Fire TV Stick running Vega OS: enable developer mode, `vega device in
 
 ## For judges (no Fire TV needed)
 
-1. Open https://stayboard.kalashshah47.workers.dev and create an account (Continue with Google, or any email and a password of 8+ characters).
+1. Open https://stayboard.keronlabs.com and create an account (Continue with Google, or any email and a password of 8+ characters).
 2. Create a property. It comes pre-filled with a sensible house guide; edit anything and watch the TV preview on the right update.
 3. Open **Design studio**: drop in a short MP4 (or paste an https link), pick **Poster** and **Fraunces**, drag a tile to a new spot. The preview plays the video; the TV would too.
 4. Open **Guest page ↗** on your phone: that's exactly what the TV shows, plus the ask box. Ask "when is checkout?" then "is there a hair dryer?".

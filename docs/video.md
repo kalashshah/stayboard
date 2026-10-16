@@ -13,7 +13,7 @@ Record at 1920×1080. TV shots come from the Vega Virtual Device (`adb -s emulat
 | 1:40–2:00 | Dashboard: Inbox → the hair-dryer question, "Needs an answer" → Add as FAQ → type the answer → TV answers it next time. | "Every unanswered question lands in the inbox. One click turns it into an FAQ. The host answers once; every future guest gets it instantly." |
 | 2:00–2:25 | Dashboard: Design studio → drop in a short MP4, pick Poster + Fraunces, drag the Ask tile to the front → TV shows the looping video with the new layout. | "And it's yours to design: a looping video or slideshow, music, five layouts, real typefaces, drag the tiles into any order. The TV, the preview and the phone page all show the same design." |
 | 2:25–2:45 | Quick cuts: Split and Minimal layouts on the TV; light theme + custom accent; friction log on screen. | "Open source, free, no subscription. Built on Vega OS, Cloudflare Workers, R2 and Amazon Bedrock, with a friction log of everything we hit along the way." |
-| 2:45–2:55 | Title card: Stayboard · stayboard.kalashshah47.workers.dev. | "Stayboard. Your rental's welcome screen, on the TV." |
+| 2:45–2:55 | Title card: Stayboard · stayboard.keronlabs.com. | "Stayboard. Your rental's welcome screen, on the TV." |
 
 Tips
 - Clear the inbox before recording so the hair-dryer question is the only open one.

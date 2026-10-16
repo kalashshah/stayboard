@@ -115,17 +115,20 @@ export const App = () => {
   const c = state.config
   const top = stack[stack.length - 1]
   const props = { c, theme, onBack: back }
+  const replies = state.replies ?? []
+  // A fresh host reply nudges whoever is on Home; it arrives with the regular config poll.
+  const replyNotice = replies.length && Date.now() - replies[0].replied_at < 3_600_000 ? `${c.hostName || 'Your host'} replied · open Ask the house` : ''
   return (
     <Screen theme={theme} c={c} dim={stack.length > 0}>
       <Music enabled={c.design.music.enabled} url={c.design.music.url} volume={c.design.music.volume} />
-      {top === undefined && <Home c={c} theme={theme} onOpen={open} notice={notice} />}
+      {top === undefined && <Home c={c} theme={theme} onOpen={open} notice={notice || replyNotice} />}
       {top === 'wifi' && <Wifi {...props} />}
       {top === 'checkout' && <Checkout {...props} />}
       {top === 'rules' && <Rules {...props} />}
       {top === 'guide' && <Guide {...props} />}
       {top === 'places' && <Places {...props} />}
       {top === 'contacts' && <Contacts {...props} />}
-      {top === 'ask' && secret && <Ask {...props} secret={secret} guestUrl={state.guestUrl} />}
+      {top === 'ask' && secret && <Ask {...props} secret={secret} guestUrl={state.guestUrl} replies={replies} />}
     </Screen>
   )
 }

@@ -1,5 +1,12 @@
-// Pure helpers behind the design studio: functional patches (so edits made during an upload survive), drag arithmetic, own-media detection.
-import type { Design, PropertyConfig } from './api'
+// Pure helpers behind the design studio: functional patches (so edits made during an upload survive), drag arithmetic, own-media detection, stills.
+import type { Design, Font, PropertyConfig } from './api'
+
+/** CSS stacks for the three TV fonts; the variables come from next/font in the root layout. */
+export const FONT_STACK: Record<Font, string> = {
+  sans: 'var(--font-inter), system-ui, sans-serif',
+  serif: 'var(--font-fraunces), Georgia, serif',
+  grotesk: 'var(--font-grotesk), system-ui, sans-serif',
+}
 
 export const patchDesign = (p: Partial<Design>) => (c: PropertyConfig): PropertyConfig => ({ ...c, design: { ...c.design, ...p } })
 export const patchBackdrop = (p: Partial<Design['backdrop']>) => (c: PropertyConfig): PropertyConfig => ({ ...c, design: { ...c.design, backdrop: { ...c.design.backdrop, ...p } } })
@@ -22,4 +29,12 @@ export function resolveMove(from: number, insertAt: number, len: number) {
 export function ownMediaFile(url: string, propertyId: string, origin: string = location.origin) {
   const prefix = `${origin}/m/${propertyId}/`
   return url.startsWith(prefix) && url.length > prefix.length ? url.slice(prefix.length) : null
+}
+
+/** The same design with video and slideshows frozen to one image, for thumbnails that should not autoplay. */
+export function stillConfig(c: PropertyConfig): PropertyConfig {
+  const b = c.design.backdrop
+  if (b.kind === 'video') return patchBackdrop({ kind: 'photo', photos: [b.poster] })(c)
+  if (b.kind === 'slideshow') return patchBackdrop({ kind: 'photo' })(c)
+  return c
 }

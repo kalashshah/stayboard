@@ -1,16 +1,16 @@
+'use client'
+
 // Web rendering of the TV home screen. Same layout engine as the TV (layoutFor/backdropFor); sizes in cqw so it scales with its box.
 import { useEffect, useState, type CSSProperties } from 'react'
-import { backdropFor, headlineFor, ICONS, layoutFor, RADIUS, tileLabel, tileSub, visibleTiles, type Font, type PropertyConfig, type TileKey } from '../api'
+import { backdropFor, headlineFor, ICONS, layoutFor, RADIUS, tileLabel, tileSub, visibleTiles, type PropertyConfig, type TileKey } from '@/api'
+import { FONT_STACK, stillConfig } from '@/design'
 
-export const FONT_STACK: Record<Font, string> = {
-  sans: "'Inter', system-ui, sans-serif",
-  serif: "'Fraunces', Georgia, serif",
-  grotesk: "'Space Grotesk', system-ui, sans-serif",
-}
 /** TV logical px (960 wide) → container width units. */
 const px = (n: number) => `${(n * 0.104).toFixed(2)}cqw`
 
-export function TvPreview({ config: c, focus, time = '7:42 PM', frame = false }: { config: PropertyConfig; focus?: TileKey; time?: string; frame?: boolean }) {
+/** `still` freezes video and slideshows to one image: for thumbnails, where a row of autoplaying previews is noise. */
+export function TvPreview({ config, focus, time = '7:42 PM', frame = false, still = false }: { config: PropertyConfig; focus?: TileKey; time?: string; frame?: boolean; still?: boolean }) {
+  const c = still ? stillConfig(config) : config
   const d = c.design
   const L = layoutFor(c)
   const dark = c.appearance.theme === 'dark'

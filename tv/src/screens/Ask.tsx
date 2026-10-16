@@ -3,16 +3,20 @@ import QRCode from '@amazon-devices/react-native-qrcode-svg'
 import React, { useState } from 'react'
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { askHouse } from '../api'
-import type { Answer, PropertyConfig } from '../types'
+import type { Answer, PropertyConfig, Reply } from '../types'
 import { Chip, Chrome, Dots, Eyebrow, Fade, Focusable, PAD, Panel, type Theme } from '../ui'
 
 // Vega-only TextInput props (TV keyboard title + size); kept as a loose object so the RN types stay happy.
 const tvKeyboard = { auxOptions: 'title:Ask the house', keyboardUiMode: 'half-screen' } as object
 
-export function Ask({ c, theme, onBack, secret, guestUrl }: { c: PropertyConfig; theme: Theme; onBack: () => void; secret: string; guestUrl: string }) {
+export function Ask({ c, theme, onBack, secret, guestUrl, replies }: { c: PropertyConfig; theme: Theme; onBack: () => void; secret: string; guestUrl: string; replies: Reply[] }) {
   const [q, setQ] = useState('')
   const [busy, setBusy] = useState(false)
   const [last, setLast] = useState<{ q: string; r: Answer } | null>(null)
+
+  const host = c.hostName || 'Your host'
+  // The host's reply to the question on screen, or else the newest reply, so a guest who walked away still finds it.
+  const reply = last ? replies.find((r) => r.id === last.r.id) : replies[0]
 
   const send = async (question: string) => {
     const t = question.trim()
@@ -69,10 +73,19 @@ export function Ask({ c, theme, onBack, secret, guestUrl }: { c: PropertyConfig;
                 <ScrollView style={{ maxHeight: 150, flexGrow: 0 }}>
                   <Text style={[styles.a, { color: theme.ink, fontFamily: theme.font }]}>{last.r.answer}</Text>
                 </ScrollView>
-                <View style={styles.answerFoot}>
-                  <Eyebrow theme={theme}>{last.r.answered ? `From ${c.hostName}'s house guide` : 'Not in the guide yet'}</Eyebrow>
-                  {!last.r.answered && <Chip theme={theme}>Your host has been told</Chip>}
-                </View>
+                {reply ? (
+                  <ReplyView theme={theme} host={host} text={reply.reply} />
+                ) : (
+                  <View style={styles.answerFoot}>
+                    <Eyebrow theme={theme}>{last.r.answered ? `From ${c.hostName}'s house guide` : 'Not in the guide yet'}</Eyebrow>
+                    {!last.r.answered && <Chip theme={theme}>{last.r.id ? `${host} will reply here` : 'Your host has been told'}</Chip>}
+                  </View>
+                )}
+              </>
+            ) : reply ? (
+              <>
+                <Text style={[styles.qText, { color: theme.sub, fontFamily: theme.font }]}>“{reply.question}”</Text>
+                <ReplyView theme={theme} host={host} text={reply.reply} />
               </>
             ) : (
               <Text style={[styles.hint, { color: theme.sub, fontFamily: theme.font }]}>Pick a question, or move up to the box and type your own.</Text>
@@ -91,6 +104,15 @@ export function Ask({ c, theme, onBack, secret, guestUrl }: { c: PropertyConfig;
   )
 }
 
+const ReplyView = ({ theme, host, text }: { theme: Theme; host: string; text: string }) => (
+  <View style={[styles.reply, { borderLeftColor: theme.accent }]}>
+    <Eyebrow theme={theme}>{`${host} replied`}</Eyebrow>
+    <ScrollView style={{ maxHeight: 120, flexGrow: 0 }}>
+      <Text style={[styles.a, { color: theme.ink, fontFamily: theme.font }]}>{text}</Text>
+    </ScrollView>
+  </View>
+)
+
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: PAD, paddingVertical: 24 },
   body: { flex: 1, flexDirection: 'row', gap: 28, alignItems: 'flex-start' },
@@ -107,6 +129,7 @@ const styles = StyleSheet.create({
   hint: { fontSize: 14, lineHeight: 20 },
   qText: { fontSize: 13 },
   a: { fontSize: 17, lineHeight: 25 },
+  reply: { gap: 4, borderLeftWidth: 2, paddingLeft: 12, marginTop: 4 },
   answerFoot: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },
   qrCard: { backgroundColor: '#fff', padding: 10, borderRadius: 16, marginBottom: 6 },
   qrT: { fontSize: 14 },

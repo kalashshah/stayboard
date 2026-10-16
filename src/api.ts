@@ -1,15 +1,14 @@
-import type { Design, Font, IconKey, PropertyConfig, Tile, TileKey } from '../worker/config'
-export { backdropFor, headlineFor, ICONS, layoutFor, RADIUS, tileLabel, tileSub, TILE_DEFAULTS, visibleTiles, wifiQr } from '../worker/config'
+import type { Answer, PropertyConfig, Reply } from '../shared/design'
+import type { Host } from '../worker/db'
+import type { Kind as MediaKind, MediaFile } from '../worker/media'
+export { backdropFor, headlineFor, ICONS, layoutFor, RADIUS, tileLabel, tileSub, TILE_DEFAULTS, visibleTiles, wifiQr } from '../shared/design'
+export type { Answer, Reply, Design, Font, IconKey, PropertyConfig, Tile, TileKey } from '../shared/design'
 
-export type { Design, Font, IconKey, PropertyConfig, Tile, TileKey }
-export type Host = { id: string; email: string }
+export type { Host, MediaFile, MediaKind }
 export type PropertySummary = { id: string; slug: string; name: string; config: PropertyConfig; updated_at: number; devices: number; unanswered: number }
 export type Property = { id: string; slug: string; config: PropertyConfig; updated_at: number }
 export type Device = { code: string; label: string | null; paired_at: number | null; last_seen_at: number | null }
-export type Question = { id: string; property_id: string; source: 'tv' | 'phone'; question: string; answer: string; answered: number; created_at: number }
-export type Answer = { answered: boolean; answer: string }
-export type MediaFile = { key: string; url: string; size: number; uploaded: number; contentType: string; name: string; kind: string }
-export type MediaKind = 'video' | 'audio' | 'image'
+export type Question = { id: string; property_id: string; source: 'tv' | 'phone'; question: string; answer: string; answered: number; created_at: number; reply: string | null; replied_at: number | null }
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -43,6 +42,7 @@ export const api = {
   pair: (id: string, code: string, label: string) => call<{ devices: Device[] }>(`/properties/${id}/pair`, { json: { code, label } }),
   unpair: (id: string, code: string) => call<{ devices: Device[] }>(`/properties/${id}/devices/${code}`, { method: 'DELETE' }),
   questions: (id: string) => call<{ questions: Question[] }>(`/properties/${id}/questions`),
+  replyQuestion: (id: string, qid: string, reply: string) => call(`/properties/${id}/questions/${qid}`, { json: { reply } }),
   deleteQuestion: (id: string, qid: string) => call(`/properties/${id}/questions/${qid}`, { method: 'DELETE' }),
   media: (id: string) => call<{ files: MediaFile[] }>(`/properties/${id}/media`),
   deleteMedia: (id: string, file: string) => call(`/properties/${id}/media/${file}`, { method: 'DELETE' }),
@@ -64,6 +64,7 @@ export const api = {
     }),
   guest: (slug: string) => call<{ config: PropertyConfig; updatedAt: number }>(`/g/${slug}`),
   guestAsk: (slug: string, question: string) => call<Answer>(`/g/${slug}/ask`, { json: { question } }),
+  guestReplies: (slug: string, ids: string[]) => call<{ replies: Omit<Reply, 'question'>[] }>(`/g/${slug}/replies?ids=${ids.join(',')}`),
 }
 
 export function ago(ms: number | null) {
