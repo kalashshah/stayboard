@@ -948,8 +948,8 @@ body {
 .tv[data-tiles="compact"] .tv-glyph { display: none; }
 .tv[data-tiles="middle"] .tv-grid { align-self: center; }
 .tv-foot { font-size: 1.25cqw; }
-.tv-frame { background: #050506; border-radius: 1.6cqw; padding: 1.2%; box-shadow: 0 0 0 3px #1f2024, 0 0 0 4px #5b5f66, 0 40px 80px -40px rgba(250, 115, 25, 0.3), 0 30px 60px -36px rgba(15, 23, 42, 0.5), inset 0 0 0 1.5px #232428; container-type: inline-size; }
-.tv-frame .tv { border-radius: 0.6cqw; box-shadow: none; }
+.tv-frame { background: #050506; border-radius: 2.8cqw; padding: 1.2%; box-shadow: 0 0 0 3px #1f2024, 0 0 0 4px #5b5f66, 0 40px 80px -40px rgba(250, 115, 25, 0.3), 0 30px 60px -36px rgba(15, 23, 42, 0.5), inset 0 0 0 1.5px #232428; container-type: inline-size; }
+.tv-frame .tv { border-radius: 1.6cqw; clip-path: inset(0 round 1.6cqw); box-shadow: none; }
 .tv-thumb .tv { border-radius: 8px; box-shadow: none; }
 
 /* ───────── Landing scroll story (src/app/story.tsx). --zoom goes 0 → 1 as the TV pins and zooms in; the TV is laid out at its

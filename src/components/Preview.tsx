@@ -58,7 +58,8 @@ export function TvPreview({ config, focus, time = '7:42 PM', frame = false, stil
       {L.footer && <div className="tv-foot" style={{ color: sub }}>Hosted by {c.hostName} · Check-in {c.stay.checkIn} · Checkout {c.stay.checkOut}</div>}
     </div>
   )
-  return frame ? <div className="tv-frame">{screen}</div> : screen
+  // The outer div is the size container, so the bezel radius (cqw) tracks the TV, not the page.
+  return frame ? <div className="[container-type:inline-size]"><div className="tv-frame">{screen}</div></div> : screen
 }
 
 const Brand = ({ c }: { c: PropertyConfig }) => (c.design.logo ? <img className="tv-logo" src={c.design.logo} alt={c.name} /> : <span className="tv-brand">{c.name}</span>)
