@@ -4,7 +4,7 @@
 
 - Live dashboard: https://stayboard.keronlabs.com
 - Source: https://github.com/kalashshah/stayboard
-- Demo video: VIDEO_URL
+- Demo video: https://github.com/kalashshah/stayboard/releases/download/v0.1.0/stayboard-demo.mp4
 - Friction log: https://github.com/kalashshah/stayboard/blob/main/docs/friction-log.md
 
 ## Tagline

@@ -8,7 +8,7 @@ Built for the Amazon "Build, Ship, Shape" Developer Hackathon 2026, Fire TV trac
 
 - Live dashboard: https://stayboard.keronlabs.com
 - Source: https://github.com/kalashshah/stayboard
-- Demo video: VIDEO_URL
+- Demo video: https://github.com/kalashshah/stayboard/releases/download/v0.1.0/stayboard-demo.mp4
 - Friction log: [docs/friction-log.md](docs/friction-log.md)
 - Design spec: [docs/superpowers/specs/2026-10-14-stayboard-design.md](docs/superpowers/specs/2026-10-14-stayboard-design.md)
 
