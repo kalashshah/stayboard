@@ -40,6 +40,10 @@ What slowed us down while building a Vega app plus an AWS-backed service in one 
 
 16. **Remote-key injection has two paths and only one is complete.** `adb emu event send` stopped moving focus after a VVD restart; `inputd-cli button_press` (in the developer-mode shell) handles arrows, Enter and Back, but Back only once `vsm developer-mode enable` has been run on that boot. A single documented `vega device press-key` would remove the guesswork. *Severity: medium.*
 
+17. **Select on a focused `TextInput` opens the on-screen keyboard and also presses its first key.** With `keyboardUiMode: 'half-screen'`, pressing Select on the input opened the keyboard with an `a` already inserted, because the same key event landed on the keyboard's first button. Typing through injected key events (`inputd-cli send_text`) opens the keyboard cleanly, but Enter from the remote does not fire `onSubmitEditing`; only the keyboard's own Search button does, four rows down and one to the right. A note on the TextInput page about which remote keys reach the keyboard, and a way to submit from the hardware Enter key, would save an afternoon. *Severity: medium.*
+
+18. **The Virtual Device can go away mid-session.** Ours exited once between two `vega run-app` calls, with nothing in `vega virtual-device status` or the CLI log to say why, and the next `start` timed out at the default 60 seconds. `--timeout 300` brought it back. A crash reason in the log, or a `restart` command, would help. *Severity: low.*
+
 **What worked:** on the Vega Virtual Device an https MP4 looped (muted) and an https MP3 reached `playing` with `<Audio autoplay loop volume>` on the first try, and all of our Unicode tile glyphs rendered (two as colour emoji).
 
 ## What worked well

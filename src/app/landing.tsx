@@ -31,8 +31,8 @@ function demo(layout: PropertyConfig['design']['layout'], font: PropertyConfig['
 const hero = demo('poster')
 
 const ASK_STEPS: [typeof RiChat3Line, string, string][] = [
-  [RiChat3Line, 'A guest asks', 'On the TV with the remote, or from their phone by scanning the code on screen. No app, no sign-up.'],
-  [RiBookOpenLine, 'Your guide answers', 'Amazon Nova reads only what you wrote: stay details, rules, guide, FAQs, local picks and contacts. It never invents codes, prices or policies.'],
+  [RiChat3Line, 'A guest asks', 'On the TV with the remote, or from their phone by scanning the code on screen. There is no app to install and no account to create.'],
+  [RiBookOpenLine, 'Your guide answers', 'Amazon Nova reads only what you wrote: stay details, rules, guide, FAQs, local picks and contacts. It will not make up a door code or a price.'],
   [RiMailLine, 'Gaps come to you', 'If it isn’t in your guide, the TV says so and you get an email. Your reply goes back to the guest who asked and is saved as an FAQ for every guest after.'],
 ]
 const ASK_EXAMPLES: [string, string, boolean][] = [
@@ -46,7 +46,7 @@ const POINTS: [string, string][] = [
   ['Every section is yours', 'Headline with the guest’s name, message, check-in and checkout, Wi-Fi with a scannable code, rules, guide, FAQs, local picks, contacts.'],
   ['Looks like your place', 'Video, photo or slideshow backdrops, music, layouts, fonts, colours, your logo, and tiles you can rename, reorder or hide.'],
   ['Grounded answers', 'Amazon Nova reads only your house guide. If it isn’t in there, the TV says so and points guests to you.'],
-  ['Private by design', 'No guest accounts, no tracking. The TV holds your house guide and a pairing secret, nothing about your guests.'],
+  ['Private by design', 'Guests never make an account and nothing tracks them. The TV stores your house guide and a pairing secret, and keeps nothing about who stayed.'],
 ]
 
 export function Landing({ initialError, next }: { initialError: string; next: string }) {
@@ -103,7 +103,7 @@ export function Landing({ initialError, next }: { initialError: string; next: st
       </section>
 
       <section className="flex scroll-mt-24 flex-col gap-8 pt-24" id="why">
-        <h2 className={h2}>Extremely configurable, deliberately simple.</h2>
+        <h2 className={h2}>What’s on the screen is up to you.</h2>
         <div className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-4">
           {POINTS.map(([t, d], i) => {
             const I = POINT_ICONS[i]

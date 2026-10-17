@@ -17,7 +17,7 @@ type Props = { id: string; c: PropertyConfig; update: (patch: (c: PropertyConfig
 
 const LAYOUT_INFO: [Design['layout'], string, string][] = [
   ['hero', 'Hero', 'Headline bottom-left, tiles along the bottom.'],
-  ['centered', 'Centered', 'Everything centered, calm and symmetrical.'],
+  ['centered', 'Centered', 'Everything centered and symmetrical.'],
   ['split', 'Split', 'Text on the left, your photo or video on the right.'],
   ['poster', 'Poster', 'Full-bleed media, big headline, compact tiles.'],
   ['minimal', 'Minimal', 'Just a small headline and the tiles.'],

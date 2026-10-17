@@ -12,11 +12,11 @@ import * as Badge from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
 const STORY: [string, string][] = [
-  ['Pair it in ten seconds.', 'The TV shows six letters. Type them into your dashboard and it’s connected. No account on the TV, nothing for guests to sign into.'],
+  ['Pair it in ten seconds.', 'The TV shows six letters. Type them into your dashboard and it’s connected. There is no account on the TV and nothing for guests to sign into.'],
   ['A welcome screen the moment the TV turns on.', 'Your guest’s name, your message, check-in and checkout, and tiles for everything they’d otherwise text you about.'],
   ['Wi-Fi without the fridge note.', 'Network and password on the big screen, plus a code their phone can scan to join.'],
-  ['Guests ask the TV anything.', '“Where’s the first aid kit?” Answers come only from what you wrote in your house guide, never made up.'],
-  ['Or ask from their phone.', 'Scan the code on the TV to read the guide and ask from the couch. No app, no sign-up.'],
+  ['Guests ask the TV anything.', '“Where’s the first aid kit?” Answers come from what you wrote in your house guide and nowhere else.'],
+  ['Or ask from their phone.', 'Scan the code on the TV to read the guide and ask from the couch. There is nothing to install and nothing to sign up for.'],
   ['What it can’t answer comes to you.', 'If it isn’t in your guide, the TV says so instead of guessing, and the question lands in your inbox right away.'],
   ['Answer once. Every guest after gets it.', 'Your reply shows up on the TV or phone that asked, and is saved as an FAQ so the next stay gets the answer instantly.'],
 ]

@@ -2,6 +2,11 @@
 
 **Track:** Fire TV. **Mini-challenges:** AWS Builder (Amazon Bedrock Nova 2 Lite), Open Source (MIT).
 
+- Live dashboard: https://stayboard.keronlabs.com
+- Source: https://github.com/kalashshah/stayboard
+- Demo video: VIDEO_URL
+- Friction log: https://github.com/kalashshah/stayboard/blob/main/docs/friction-log.md
+
 ## Tagline
 
 Your rental's welcome screen, on the Fire TV. Guests ask the TV; you answer once.
@@ -12,16 +17,16 @@ Every short-term-rental host answers the same five questions every week: the Wi-
 
 ## What it does
 
-- A **Fire TV app (Vega OS)** that turns on to a welcome screen with the guest's name, Wi-Fi with a scannable QR code, checkout checklist, house rules, a house guide, local picks and contacts.
-- **Ask the house**: guests pick a question or type one on the TV (or scan a QR code and ask from their phone). Amazon Nova 2 Lite answers only from the host's guide. If the guide doesn't cover it, the TV says so and points to the host.
-- A **host dashboard** with a live preview of the TV, autosave, pairing by a six-letter code, and an **inbox** where unanswered questions become FAQs with one click. The TV picks up changes within a minute.
-- A **design studio**: looping background video, photo or slideshow, background music, five layouts, three bundled typefaces, colours, a logo, and tiles the host can rename, reorder by drag, or hide. Uploads land in Cloudflare R2; the TV plays them through Vega's W3C media API.
+- A Fire TV app on Vega OS that turns on to a welcome screen with the guest's name, Wi-Fi with a scannable QR code, a checkout checklist, house rules, a house guide, local picks and contacts.
+- Ask the house: guests pick a question or type one on the TV, or scan a QR code and ask from their phone. Amazon Nova 2 Lite answers only from the host's guide. If the guide doesn't cover it, the TV says so and tells the host.
+- A host dashboard with a live preview of the TV, autosave and pairing by a six-letter code. Unanswered questions land in an inbox. The host replies once; the guest sees the reply on the TV or phone, and it is saved as an FAQ for everyone after. The TV picks up changes within a minute.
+- A design studio: looping background video, photo or slideshow, background music, five layouts, three bundled typefaces, colours, a logo, and tiles the host can rename, drag into a new order, or hide. Uploads land in Cloudflare R2 and the TV plays them through Vega's W3C media API.
 
 ## How we built it
 
 - TV: React Native 0.83 for Vega (`@amazon-devices/react-native-kepler`), `TVFocusGuideView` for D-pad focus, `@amazon-devices/react-native-w3cmedia` `<Video>`/`<Audio>` for the backdrop and music, bundled OFL fonts, `@amazon-devices/react-native-qrcode-svg`, AsyncStorage for the device secret and the last config. Tested on the Vega Virtual Device.
-- Backend: Cloudflare Worker (Hono) + D1 + R2. Bedrock Converse API with a system prompt built from the property config; strict JSON output; daily caps. One layout engine (`layoutFor`/`backdropFor`) shared by the TV, the web preview and the guest page.
-- Dashboard and guest page: React 19 + Vite served by the same Worker.
+- Backend: Next.js 16 route handlers running on a Cloudflare Worker through OpenNext, with D1 for data and R2 for host uploads, served with Range support and an immutable cache. The Bedrock Converse API gets a system prompt built from the property config and must return strict JSON. Temperature 0, 300 tokens, daily caps per guest page and overall. One layout engine in `shared/design.ts` is shared by the TV, the web preview and the guest page.
+- Dashboard and guest page: Next.js 16 App Router with Tailwind 4 and AlignUI components, deployed on the same Worker. The guest page is server-rendered at `/g/<slug>` and reached from a QR code on the TV.
 
 ## Challenges
 

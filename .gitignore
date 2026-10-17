@@ -14,3 +14,4 @@ tv/generated/
 .next/
 .open-next/
 next-env.d.ts
+tsconfig.tsbuildinfo
