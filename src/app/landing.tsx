@@ -126,7 +126,7 @@ export function Landing({ initialError, next }: { initialError: string; next: st
       </Card>
 
       <footer className="flex flex-wrap justify-between gap-2 border-t border-stroke-soft-200 pt-6 text-paragraph-sm text-text-soft-400">
-        <span>Stayboard · Fire TV app on Vega OS · Amazon Bedrock Nova 2 Lite · Cloudflare Workers</span>
+        <span>Stayboard · Fire TV app on Vega OS · Amazon Bedrock Nova 2 Lite</span>
         <span>Built for the Amazon Developer Hackathon 2026</span>
       </footer>
       </div>

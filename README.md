@@ -21,7 +21,7 @@ Welcome-screen apps already exist on Fire TV (Hello Guest Screen, WelcomeScreen,
 | Part | Where | Stack |
 |---|---|---|
 | Fire TV app | `tv/` | React Native 0.83 for Vega (`@amazon-devices/react-native-kepler` 4), `react-native-w3cmedia` for video and audio, QR codes, AsyncStorage, bundled fonts |
-| API + database + media | `src/app/api/`, `worker/`, `migrations/` | Next.js route handlers on a Cloudflare Worker via OpenNext; D1/R2 logic in `worker/`. D1 (SQLite), R2 for host uploads (ranged, immutable), Amazon Bedrock Nova 2 Lite via `aws4fetch` |
+| API + database + media | `src/app/api/`, `worker/`, `migrations/` | Next.js route handlers on Workers via OpenNext; database and storage logic in `worker/`. D1 (SQLite), R2 object storage for host uploads (ranged, immutable), Amazon Bedrock Nova 2 Lite via `aws4fetch` |
 | Host dashboard | `src/app/` | Next.js 16 (App Router) + Tailwind 4 with AlignUI components; design studio with a live framed preview of the TV, drag-to-reorder tiles, uploads with progress, autosave |
 | Guest phone page | `src/app/g/[slug]/` | Server-rendered at `/g/<slug>`, reached from a QR code on the TV; same backdrop, font and tile order as the TV |
 
@@ -52,7 +52,7 @@ The Worker builds a system prompt from the property config (stay, Wi-Fi, rules, 
 
 ## Run it yourself
 
-Prerequisites: Node 20+, a Cloudflare account, an AWS account with Bedrock access to `us.amazon.nova-2-lite-v1:0` in us-east-1, and (for the TV) the Vega SDK on a Mac or Linux machine.
+Prerequisites: Node 20+, a Workers account (for the API, D1 and R2), an AWS account with Bedrock access to `us.amazon.nova-2-lite-v1:0` in us-east-1, and (for the TV) the Vega SDK on a Mac or Linux machine.
 
 ```bash
 # API + dashboard
@@ -63,8 +63,8 @@ npx wrangler r2 bucket create stayboard-media   # host uploads (free tier is ple
 cp .dev.vars.example .dev.vars              # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (IAM user with bedrock:InvokeModel only)
                                             # GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (OAuth web client; redirect URI <origin>/api/auth/google/callback)
 npx wrangler secret bulk .dev.vars
-npm run deploy                              # opennextjs-cloudflare build + deploy
-npm test                                    # vitest: config schema, hashing, prompt, answer parsing
+npm run deploy                              # OpenNext build + deploy
+npm test                                    # vitest: config schema, sign-in codes, prompt, answer parsing
 
 # TV app (Vega SDK installed: curl -fsSL https://sdk-installer.vega.labcollab.net/get_vvm.sh | bash)
 cd tv && npm install
@@ -78,12 +78,12 @@ For a real Fire TV Stick running Vega OS: enable developer mode, `vega device in
 
 ## For judges (no Fire TV needed)
 
-1. Open https://stayboard.keronlabs.com and create an account (Continue with Google, or any email and a password of 8+ characters).
+1. Open https://stayboard.keronlabs.com and create an account: Continue with Google, or enter your email and type in the six-digit code we send you.
 2. Create a property. It comes pre-filled with a sensible house guide; edit anything and watch the TV preview on the right update.
 3. Open **Design studio**: drop in a short MP4 (or paste an https link), pick **Poster** and **Fraunces**, drag a tile to a new spot. The preview plays the video; the TV would too.
 4. Open **Guest page ↗** on your phone: that's exactly what the TV shows, plus the ask box. Ask "when is checkout?" then "is there a hair dryer?".
-5. Back in the editor, open **Inbox**: the hair-dryer question is waiting. Click **Add as FAQ**, type the answer. Ask again on the phone.
-6. To see the real TV app, run it on the Vega Virtual Device (above) and pair it from **Devices** with the six-letter code the TV shows.
+5. Back in the editor, open **Inbox**: the hair-dryer question is waiting. Type an answer and click **Send reply**. The guest sees it on the phone, and it's saved as an FAQ, so asking again gets an instant answer.
+6. To see the real TV app, install a prebuilt `.vpkg` from the [release](https://github.com/kalashshah/stayboard/releases/tag/v0.1.0) on the Vega Virtual Device (`vega virtual-device start`, then `vega run-app stayboard_aarch64.vpkg com.kalashshah.stayboard.main -d VirtualDevice`; use `x86_64` on Intel or Linux). The packages already talk to the live site. Pair it from **Devices** with the six-letter code the TV shows.
 
 ## Screenshots (Vega Virtual Device and dashboard)
 
@@ -110,7 +110,7 @@ The rest of the app:
 
 ## Security and privacy
 
-- Passwords: PBKDF2-SHA256, 100k iterations, Web Crypto. Sessions: HttpOnly, Secure, SameSite=Lax cookie, 30 days.
+- Sign-in: Google, or a six-digit email code (sent through the Workers email binding). Codes are stored as SHA-256 hashes, expire after 10 minutes and die after five wrong tries. One code per minute and 10 per day per address. Sessions: HttpOnly, Secure, SameSite=Lax cookie, 30 days.
 - TVs authenticate with a random 32-byte secret that is never shown to anyone; hosts only see the six-letter pairing code.
 - The guest page exposes exactly what the TV shows. Questions are stored as text only.
 - Uploads are type- and size-checked in the Worker, stored under the property's own prefix, deleted with the property, and served without listing. URL fields accept `https://` only.

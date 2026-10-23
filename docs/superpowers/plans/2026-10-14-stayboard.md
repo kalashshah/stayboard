@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: superpowers:executing-plans (inline). Steps use checkbox syntax.
 
-**Goal:** Ship Stayboard end to end: Worker API + D1, host dashboard with live preview, guest phone page, Vega (Fire TV) app, Nova-powered "Ask the house", running on the Vega Virtual Device and deployed to Cloudflare.
+**Goal:** Ship Stayboard end to end: Worker API + D1, host dashboard with live preview, guest phone page, Vega (Fire TV) app, Nova-powered "Ask the house", running on the Vega Virtual Device and deployed to Workers.
 
-**Architecture:** One Cloudflare Worker (Hono) serves `/api/*` and the Vite SPA (dashboard + guest page). D1 holds hosts, sessions, properties (config as one JSON column), devices, questions, usage. The TV app is React Native 0.83 for Vega; it registers for a pairing code, polls config, and posts questions. Bedrock Nova 2 Lite answers from a system prompt built from the property config.
+**Architecture:** One Worker (Hono) serves `/api/*` and the Vite SPA (dashboard + guest page). D1 holds hosts, sessions, properties (config as one JSON column), devices, questions, usage. The TV app is React Native 0.83 for Vega; it registers for a pairing code, polls config, and posts questions. Bedrock Nova 2 Lite answers from a system prompt built from the property config.
 
 **Tech Stack:** TypeScript, Hono, zod, aws4fetch, React 19, Vite 8, vitest, wrangler 4, Vega SDK 0.24 (`@amazon-devices/react-native-kepler` 4), `@amazon-devices/react-native-qrcode-svg`, `@amazon-devices/react-native-async-storage__async-storage`.
 

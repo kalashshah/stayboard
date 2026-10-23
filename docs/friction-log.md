@@ -12,7 +12,7 @@ What slowed us down while building a Vega app plus an AWS-backed service in one 
 
 4. **Installer has a non-interactive mode that isn't documented.** `get_vvm.sh` honors `NONINTERACTIVE=true` and `VEGA_SDK_VERSION`, but the install page only describes the prompts. We only knew because we read the script. *Severity: low. Fix: document the env vars; CI users need them.*
 
-5. **Network privileges are unclear.** The manifest docs show camera and media privileges and a `net-info` privilege for `react-native-netinfo`. Nothing says whether plain `fetch` needs a privilege. It doesn't (our app talks to a Cloudflare Worker with no manifest changes), but we only learned that by trying. *Severity: low. Fix: one line on the manifest page: "outbound HTTPS needs no privilege".*
+5. **Network privileges are unclear.** The manifest docs show camera and media privileges and a `net-info` privilege for `react-native-netinfo`. Nothing says whether plain `fetch` needs a privilege. It doesn't (our app talks to its own HTTPS API with no manifest changes), but we only learned that by trying. *Severity: low. Fix: one line on the manifest page: "outbound HTTPS needs no privilege".*
 
 6. **Ported library versions look like typos.** `@amazon-devices/react-native-svg@3.0.9000000001` and `...async-storage__async-storage@2.1.9000000001`. They install fine, but the version scheme (`<major>.<minor>.9000000001`) isn't explained on the supported-libraries page, and `npm view` is the only way to find the exact string. *Severity: low. Fix: explain the scheme or show the full install line per library.*
 

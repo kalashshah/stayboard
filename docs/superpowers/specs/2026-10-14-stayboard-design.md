@@ -13,7 +13,7 @@
 
 ## Components
 
-1. **Worker + D1** (Cloudflare, Hono, TypeScript). API for hosts, TVs and guests. Calls Amazon Bedrock (Nova 2 Lite, `us.amazon.nova-2-lite-v1:0`, us-east-1) for answers. Serves the dashboard SPA and the guest page.
+1. **Worker + D1** (Workers, Hono, TypeScript). API for hosts, TVs and guests. Calls Amazon Bedrock (Nova 2 Lite, `us.amazon.nova-2-lite-v1:0`, us-east-1) for answers. Serves the dashboard SPA and the guest page.
 2. **Dashboard** (`src/`, React + Vite). Landing page, sign-up/sign-in, property editor with live TV preview, questions inbox, device pairing.
 3. **Guest page** (`src/guest`, same SPA, route `/g/:slug`). Mobile web version of the TV screen with an ask box.
 4. **TV app** (`tv/`, React Native 0.83 for Vega, `@amazon-devices/react-native-kepler`). Pair, home, detail screens, ask screen.

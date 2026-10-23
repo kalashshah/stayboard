@@ -6,7 +6,7 @@
 
 **Architecture:** One `design` object in the property config, migrated from the old `appearance` fields by a pure `upgradeConfig`. Pure helpers (`layoutFor`, `backdropFor`, `tileSub`, `visibleTiles`) live in `worker/config.ts` and are mirrored in `tv/src/types.ts`, so three renderers agree. Media is uploaded raw to R2 through the Worker and served back with Range support. The dashboard gets a sidebar studio with a Design tab; the TV app adds `react-native-w3cmedia` for video and audio.
 
-**Tech Stack:** Hono + zod 4 + D1 + R2 on Cloudflare Workers; React 19 + Vite; Vega RN 0.83 + `@amazon-devices/react-native-w3cmedia` ~2.3.2; vitest, jest, Playwright (scratchpad).
+**Tech Stack:** Hono + zod 4 + D1 + R2 on Workers; React 19 + Vite; Vega RN 0.83 + `@amazon-devices/react-native-w3cmedia` ~2.3.2; vitest, jest, Playwright (scratchpad).
 
 **Spec:** `docs/superpowers/specs/2026-10-14-stayboard-studio-design.md`
 
