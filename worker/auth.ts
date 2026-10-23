@@ -1,32 +1,14 @@
-// Password hashing (PBKDF2-SHA256 via Web Crypto) and random identifiers.
-import { timingSafeEqual } from 'node:crypto'
+// Sign-in codes (hashed with SHA-256 via Web Crypto) and random identifiers.
 
 export const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-const ITERATIONS = 100_000
 
 const b64url = (bytes: Uint8Array) =>
   btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 
-async function pbkdf2(password: string, salt: string) {
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits'])
-  const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-256', salt: new TextEncoder().encode(salt), iterations: ITERATIONS },
-    key,
-    256,
-  )
-  return b64url(new Uint8Array(bits))
-}
+/** Six random digits for an email sign-in code. */
+export const loginCode = () => String(crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000).padStart(6, '0')
 
-export async function hashPassword(password: string) {
-  const salt = newSecret()
-  return { hash: await pbkdf2(password, salt), salt }
-}
-
-export async function verifyPassword(password: string, hash: string, salt: string) {
-  const enc = (s: string) => new TextEncoder().encode(s)
-  const got = enc(await pbkdf2(password, salt))
-  return got.length === hash.length && timingSafeEqual(got, enc(hash))
-}
+export const sha256 = async (s: string) => b64url(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))))
 
 export function randomCode(n: number) {
   const bytes = crypto.getRandomValues(new Uint8Array(n))

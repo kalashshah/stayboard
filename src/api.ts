@@ -31,8 +31,8 @@ async function call<T>(path: string, init?: RequestInit & { json?: unknown }): P
 
 export const api = {
   me: () => call<{ host: Host }>('/auth/me'),
-  signup: (email: string, password: string) => call<{ host: Host }>('/auth/signup', { json: { email, password } }),
-  login: (email: string, password: string) => call<{ host: Host }>('/auth/login', { json: { email, password } }),
+  sendCode: (email: string) => call<{ sent: true }>('/auth/code', { json: { email } }),
+  verifyCode: (email: string, code: string) => call<{ host: Host }>('/auth/verify', { json: { email, code } }),
   logout: () => call('/auth/logout', { method: 'POST' }),
   properties: () => call<{ properties: PropertySummary[] }>('/properties'),
   createProperty: (name: string) => call<{ property: Property }>('/properties', { json: { name } }),

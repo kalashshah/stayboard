@@ -1,20 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { CODE_ALPHABET, hashPassword, newSecret, randomCode, slugFor, verifyPassword } from './auth'
+import { CODE_ALPHABET, loginCode, newSecret, randomCode, sha256, slugFor } from './auth'
 
-describe('passwords', () => {
-  it('round-trips a password', async () => {
-    const { hash, salt } = await hashPassword('correct horse battery staple')
-    expect(await verifyPassword('correct horse battery staple', hash, salt)).toBe(true)
+describe('sign-in codes', () => {
+  it('are six digits, zero-padded', () => {
+    for (let i = 0; i < 200; i++) expect(loginCode()).toMatch(/^\d{6}$/)
   })
-  it('rejects a wrong password', async () => {
-    const { hash, salt } = await hashPassword('right')
-    expect(await verifyPassword('wrong', hash, salt)).toBe(false)
-  })
-  it('salts differ between calls', async () => {
-    const a = await hashPassword('x')
-    const b = await hashPassword('x')
-    expect(a.salt).not.toBe(b.salt)
-    expect(a.hash).not.toBe(b.hash)
+  it('hash the same code the same way and different codes differently', async () => {
+    expect(await sha256('123456')).toBe(await sha256('123456'))
+    expect(await sha256('123456')).not.toBe(await sha256('123457'))
   })
 })
 

@@ -1,5 +1,5 @@
 // Thin D1 helpers. Every function takes env and returns plain rows.
-import { hashPassword, newId, newSecret, randomCode, slugFor } from './auth'
+import { loginCode, newId, newSecret, randomCode, sha256, slugFor } from './auth'
 import { defaultConfig, upgradeConfig, type PropertyConfig } from './config'
 import { deletePrefix } from './media'
 
@@ -22,22 +22,34 @@ export const toProperty = (r: PropertyRow): Property => ({
 })
 
 // hosts + sessions
-export async function createHost(env: Env, email: string, password: string): Promise<Host | null> {
-  const { hash, salt } = await hashPassword(password)
-  const id = newId()
-  try {
-    await env.DB.prepare('INSERT INTO hosts (id, email, pass_hash, salt, created_at) VALUES (?1, ?2, ?3, ?4, ?5)')
-      .bind(id, email, hash, salt, Date.now()).run()
-  } catch (e) {
-    if (String(e).includes('UNIQUE')) return null
-    throw e
-  }
-  return { id, email }
+const CODE_MINUTES = 10
+const CODE_RESEND_MS = 60_000
+const CODE_ATTEMPTS = 5
+
+/** A fresh sign-in code for this email, replacing any earlier one; null if one was sent less than a minute ago. */
+export async function issueLoginCode(env: Env, email: string): Promise<string | null> {
+  const code = loginCode()
+  const now = Date.now()
+  const row = await env.DB.prepare(
+    `INSERT INTO login_codes (email, code_hash, expires_at, attempts, sent_at) VALUES (?1, ?2, ?3, 0, ?4)
+     ON CONFLICT(email) DO UPDATE SET code_hash = ?2, expires_at = ?3, attempts = 0, sent_at = ?4 WHERE sent_at < ?5
+     RETURNING email`,
+  ).bind(email, await sha256(code), now + CODE_MINUTES * 60_000, now, now - CODE_RESEND_MS).first()
+  return row ? code : null
 }
 
-/** Host for a Google-verified email. New emails get a password-less row (password login stays closed until one is set). An existing
- *  password account belongs to whoever Google just verified: email signup never checked the address, so a password set before that
- *  verification (and any session using it) is retired rather than left as a second key to the account. */
+/** True once for the right, unexpired code. Each try counts, and a code dies after five wrong ones. */
+export async function takeLoginCode(env: Env, email: string, code: string): Promise<boolean> {
+  const row = await env.DB.prepare(
+    `UPDATE login_codes SET attempts = attempts + 1 WHERE email = ?1 AND expires_at > ?2 AND attempts < ?3 RETURNING code_hash`,
+  ).bind(email, Date.now(), CODE_ATTEMPTS).first<{ code_hash: string }>()
+  if (!row || row.code_hash !== (await sha256(code))) return false
+  await env.DB.prepare('DELETE FROM login_codes WHERE email = ?1').bind(email).run()
+  return true
+}
+
+/** Host for an email that Google or a sign-in code just verified; new emails get a row. Accounts from the old password signup never
+ *  had their address checked, so a leftover password (and any session using it) is retired rather than left as a second key. */
 export async function hostForEmail(env: Env, email: string): Promise<Host> {
   await env.DB.prepare("INSERT OR IGNORE INTO hosts (id, email, pass_hash, salt, created_at) VALUES (?1, ?2, '', '', ?3)").bind(newId(), email, Date.now()).run()
   const row = (await env.DB.prepare('SELECT id, email, pass_hash FROM hosts WHERE email = ?1').bind(email).first<Host & { pass_hash: string }>())!
@@ -49,10 +61,6 @@ export async function hostForEmail(env: Env, email: string): Promise<Host> {
   }
   return { id: row.id, email: row.email }
 }
-
-export const findHost = (env: Env, email: string) =>
-  env.DB.prepare('SELECT id, email, pass_hash, salt FROM hosts WHERE email = ?1').bind(email)
-    .first<{ id: string; email: string; pass_hash: string; salt: string }>()
 
 export async function createSession(env: Env, hostId: string) {
   const id = newSecret()
